@@ -1,0 +1,45 @@
+cff-version: 1.2.0
+message: "If you use this software or its results, please cite it as below."
+title: "The Truth Was Never Gone: Perfect Aliasing in Compliant-Context Truth Probes"
+abstract: >
+  Linear truth probes transfer well to instructed liars, yet degrade, and in the
+  most-cited case fall below chance, against models trained under reward. That
+  contrast is usually read representationally: the trained deceiver is said to
+  hide or stop representing what it knows. We show the inference does not follow,
+  because the probes it rests on are unidentified. In the compliant ("ally")
+  contexts where such probes are trained, the model's belief, its intended action
+  and its emitted token are perfectly aliased, so nothing distinguishes a truth
+  probe from an action probe, and inversion on deceptive contexts is precisely
+  what an action probe must do. On compliant data the truth and action labels are
+  identical, so the "truth probe" and the action probe are one fitted probe scored
+  against opposite labels, and action/ally = 1 - truth/ally at every layer of
+  every model tested. Breaking the collinearity with a randomized-codebook task
+  and fitting on mixed compliant and deceptive contexts recovers the bit: on the
+  same activations at the same layer of a reward-trained model that lies on 100%
+  of deceptive trials, the conventional probe reads 0.006 +/- 0.005 across three
+  training seeds while the identified probe reads 1.000 with zero seed variance.
+type: software
+authors:
+  - family-names: "Jayabahu"
+    given-names: "Dylan"
+    affiliation: "University of Waterloo"
+license: MIT
+keywords:
+  - interpretability
+  - linear-probes
+  - deception
+  - identification
+  - reinforcement-learning
+  - truth-probes
+  - LLM
+version: 0.1.0
+date-released: 2026-08-20
+preferred-citation:
+  type: conference-paper
+  title: "The Truth Was Never Gone: Perfect Aliasing in Compliant-Context Truth Probes"
+  authors:
+    - family-names: "Jayabahu"
+      given-names: "Dylan"
+      affiliation: "University of Waterloo"
+  collection-title: "NeurIPS 2026 Workshop on Interpretability as a Science"
+  year: 2026

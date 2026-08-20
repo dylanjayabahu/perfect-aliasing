@@ -1,0 +1,247 @@
+% Bibliography for the NeurIPS 2026 "Interpretability as a Science" workshop submission.
+%
+% ============================================================================================
+% VERIFICATION STATUS: ALL 18 ENTRIES INDEPENDENTLY VERIFIED 2026-08-17 (checklist item 4f).
+% ============================================================================================
+% Method, recorded so it is auditable and so nobody has to redo it blind:
+%   1. Every arXiv ID was fetched from the arXiv Atom API
+%      (export.arxiv.org/api/query?id_list=...) and the RAW XML read directly -- no summarizing
+%      model in the loop, because for the one item that can desk-reject the paper a model's
+%      report of a page is not the page.
+%   2. Cross-checked against the rendered /abs/ listing for all 12 cited IDs.  Both methods agree
+%      on every title, author list, submission date and venue field.
+%   3. Author names below are transcribed from the API's <author><name> fields, NOT from
+%      docs/related-work.md (which records surnames only).  Surnames there were all correct;
+%      first names were simply absent, which was the actual defect this item existed to fix.
+%   4. Names are written "Last, First" throughout so BibTeX cannot mis-split compound given
+%      names -- e.g. "Lubana, Ekdeep Singh" and "Ying, Zhuofan Josh" would otherwise have their
+%      middle names promoted into the surname.
+%
+% RESULT: 18/18 IDs resolve.  18/18 titles match.  0 fabricated citations.  0 wrong-paper hits.
+% Defects found and fixed here: (a) every entry had surname-only authors; (b) geometryoftruth2024
+% had a TRUNCATED title ("LLM Representations" -> "Large Language Model Representations").
+% Four further defects were in main.tex, not in this file, and are recorded in our citation-integrity notes
+% under the citation-integrity section -- they concerned what we ATTRIBUTED to these papers, not
+% whether the papers exist.
+%
+% Venue fields are quoted from each record's own journal-ref or comments field; where a record has
+% neither, the entry stays an article/preprint type rather than being upgraded on a guess.
+% (NB: never write a bare at-sign in these comments -- BibTeX scans for it outside entries, reads it as the
+%  start of a new entry, and silently skips forward. That produced 2 parse errors in this file until fixed.)
+% RE-CHECK before upload if more than a few weeks pass: venue fields change as preprints are
+% accepted, and this bibliography has already carried one such error (Obfuscation Atlas was
+% recorded as "Outstanding Paper HM" before being corrected to Oral).
+% Entries marked "read in full" were read end-to-end, not merely abstract-checked.
+
+% ---------------------------------------------------------------------------------------------
+% CITED IN main.tex (12).  These are the desk-reject surface: plainnat emits exactly these.
+% ---------------------------------------------------------------------------------------------
+
+% journal-ref verified verbatim: "Proceedings of the 43rd International Conference on Machine
+% Learning, PMLR 306, 2026".  v1 2026-02-01, v2 2026-06-18.  Read in full 2026-08-14; the
+% attributed 0.374 (MASK known facts) and 70.6% (ANOVA over 2000 probes) were both located in
+% the body 2026-08-17.
+% CLICKABLE IDENTIFIERS: each printed arXiv ID is wrapped in \href so the reference list carries a
+% resolvable link. The IDs themselves are UNCHANGED from the 2026-08-17 verification above; this pass
+% only wrapped them, so it does not re-open citation integrity. Display text stays "arXiv:ID" rather
+% than the bare URL: a full URL in a note field is ~57 chars and overflows the reference-list measure.
+
+@inproceedings{oneprobe2026,
+  title     = {One Probe Won't Catch Them All: Towards Targeted Deception Detection},
+  author    = {Natarajan, Vikram and Jain, Devina and Arora, Shivam and Golechha, Satvik and
+               Bloom, Joseph},
+  booktitle = {Proceedings of the 43rd International Conference on Machine Learning (ICML)},
+  series    = {PMLR},
+  volume    = {306},
+  year      = {2026},
+  note      = {\href{https://arxiv.org/abs/2602.01425}{arXiv:2602.01425}},
+}
+
+% comments field verified verbatim: "Accepted at ICML 2026 (Oral presentation). 30 pages, 14
+% figures".  v1 2026-02-17, v2 2026-05-26.  ICML 2026 = the 43rd, corroborated by oneprobe2026's
+% journal-ref.  Table 4 (0.991 +/- 0.009 -> 0.376 +/- 0.261) located in the body 2026-08-17.
+@inproceedings{obfuscationatlas2026,
+  title     = {The Obfuscation Atlas: Mapping Where Honesty Emerges in {RLVR} with Deception
+               Probes},
+  author    = {Taufeeque, Mohammad and Heimersheim, Stefan and Gleave, Adam and Cundy, Chris},
+  booktitle = {Proceedings of the 43rd International Conference on Machine Learning (ICML)},
+  year      = {2026},
+  note      = {Oral presentation. \href{https://arxiv.org/abs/2602.15515}{arXiv:2602.15515}},
+}
+
+% No journal-ref and no venue field on the record => stays a preprint.  v1 2025-02-05.
+% Abstract states "AUROCs between 0.96 and 0.999", which is what main.tex attributes.
+@article{goldowskydill2025,
+  title   = {Detecting Strategic Deception Using Linear Probes},
+  author  = {Goldowsky-Dill, Nicholas and Chughtai, Bilal and Heimersheim, Stefan and
+             Hobbhahn, Marius},
+  journal = {arXiv preprint \href{https://arxiv.org/abs/2502.03407}{arXiv:2502.03407}},
+  year    = {2025},
+}
+
+% No journal-ref, no venue field.  v1 2025-06-17 (year below), last revised 2026-02-26.
+% NOTE: the word "chance" appears NOWHERE in this paper; do not attribute a fall-to-chance
+% number to it.  Its own framing is Evasion Success Rate, and token-level monitors being highly
+% vulnerable while max-pooling/attention probes stay robust.
+@article{rlobfuscation2025,
+  title   = {{RL}-Obfuscation: Can Language Models Learn to Evade Latent-Space Monitors?},
+  author  = {Gupta, Rohan and Jenner, Erik},
+  journal = {arXiv preprint \href{https://arxiv.org/abs/2506.14261}{arXiv:2506.14261}},
+  year    = {2025},
+}
+
+% comments field verified verbatim: "Accepted at the GEM Workshop at ACL 2026".  v1 2026-05-27.
+%   ^ the record writes an at-sign where this line spells out "at"; substituted only because a bare at-sign
+%     breaks BibTeX parsing (see the note above). The venue itself is quoted unchanged.
+% Sole author.  Its "27B probes to chance level" claim is explicitly qualified "under standard
+% training", and it concludes inverse scaling is a training-distribution artifact -- carry both.
+@article{pressuretesting2026,
+  title   = {Pressure-Testing Deception Probes in {LLMs}: Scaling, Robustness, and the Geometry of
+             Deceptive Representations},
+  author  = {Kumar, Sachin},
+  journal = {arXiv preprint \href{https://arxiv.org/abs/2605.27958}{arXiv:2605.27958}},
+  year    = {2026},
+  note    = {GEM Workshop @ ACL 2026},
+}
+
+% No journal-ref, no venue field.  v1 2025-11-23.  All 22 authors listed rather than truncated to
+% "and others": a complete author list is cheap and is a positive integrity signal in a paper
+% whose bibliography a reviewer may spot-check.
+@article{emergentmisalignment2025,
+  title   = {Natural Emergent Misalignment from Reward Hacking in Production {RL}},
+  author  = {MacDiarmid, Monte and Wright, Benjamin and Uesato, Jonathan and Benton, Joe and
+             Kutasov, Jon and Price, Sara and Bouscal, Naia and Bowman, Sam and
+             Bricken, Trenton and Cloud, Alex and Denison, Carson and Gasteiger, Johannes and
+             Greenblatt, Ryan and Leike, Jan and Lindsey, Jack and Mikulik, Vlad and
+             Perez, Ethan and Rodrigues, Alex and Thomas, Drake and Webson, Albert and
+             Ziegler, Daniel and Hubinger, Evan},
+  journal = {arXiv preprint \href{https://arxiv.org/abs/2511.18397}{arXiv:2511.18397}},
+  year    = {2025},
+}
+
+% comments field verified verbatim: "ACL 2026 (Main)".  v1 2026-01-10, v4 2026-07-30.
+% ACL 2026 = the 64th Annual Meeting.  Read in full 2026-08-14.  Abstract supports the
+% rotation-plus-scaling characterization: directional change (theta) plus relative magnitude,
+% orthogonal early / converging mid-stack, separation amplified by context.
+@inproceedings{contextshapestruth2026,
+  title     = {How Context Shapes Truth: Geometric Transformations of Statement-level Truth
+               Representations in {LLMs}},
+  author    = {Adarsh, Shivam and Maistro, Maria and Lioma, Christina},
+  booktitle = {Proceedings of the 64th Annual Meeting of the Association for Computational
+               Linguistics (ACL), Main Conference},
+  year      = {2026},
+  note      = {\href{https://arxiv.org/abs/2601.06599}{arXiv:2601.06599}},
+}
+
+% No journal-ref, no venue field.  v1 2025-09-22, v2 2025-09-23.
+% "Nikoli\'{c}" is escaped rather than left as a raw UTF-8 codepoint so the entry is robust
+% independently of the inputenc/fontenc setup in main.tex.
+@article{strategicdishonesty2025,
+  title   = {Strategic Dishonesty Can Undermine {AI} Safety Evaluations of Frontier {LLMs}},
+  author  = {Panfilov, Alexander and Kortukov, Evgenii and Nikoli\'{c}, Kristina and
+             Bethge, Matthias and Lapuschkin, Sebastian and Samek, Wojciech and
+             Prabhu, Ameya and Andriushchenko, Maksym and Geiping, Jonas},
+  journal = {arXiv preprint \href{https://arxiv.org/abs/2509.18058}{arXiv:2509.18058}},
+  year    = {2025},
+}
+
+% comments field verified verbatim: "10 pages, ACL 2026 Conference".  v1 2025-11-21, v4
+% 2026-04-19.  Abstract supports the attributed claim verbatim: "The largest generalisation
+% failures arise for behaviours defined by response ``intent'' ... rather than text-level
+% content".
+@inproceedings{offpolicyprobes2026,
+  title     = {The Impact of Off-Policy Training Data on Probe Generalisation},
+  author    = {Kirch, Nathalie and Dower, Samuel and Skapars, Adrians and
+               Yannakoudakis, Helen and Lubana, Ekdeep Singh and Krasheninnikov, Dmitrii},
+  booktitle = {Proceedings of the 64th Annual Meeting of the Association for Computational
+               Linguistics (ACL)},
+  year      = {2026},
+  note      = {\href{https://arxiv.org/abs/2511.17408}{arXiv:2511.17408}},
+}
+
+% No journal-ref, no venue field.  v1 2026-06-15.  Sole author.
+@article{rift2026,
+  title   = {Rift: A Conflict Signature for Deception in Language Models},
+  author  = {Nyoma, Petr},
+  journal = {arXiv preprint \href{https://arxiv.org/abs/2606.17229}{arXiv:2606.17229}},
+  year    = {2026},
+}
+
+% No journal-ref, no venue field.  v1 2026-02-16.  Sole author.
+% Benign record quirk, checked and dismissed: the ID sits in the 2603 (March) block while the
+% record's published date is 2026-02-16.  The arXiv API returns this entry for id_list=2603.10003,
+% so the identifier is canonical; the date/block mismatch is arXiv's own bookkeeping, not ours.
+@article{liedetectorlimits2026,
+  title   = {Probing the Limits of the Lie Detector Approach to {LLM} Deception},
+  author  = {Berger, Tom-Felix},
+  journal = {arXiv preprint \href{https://arxiv.org/abs/2603.10003}{arXiv:2603.10003}},
+  year    = {2026},
+}
+
+% comments field verified verbatim: "Conference on Language Modeling, 2024".  v1 2023-10-10,
+% v3 2024-08-19.
+% TITLE CORRECTED 2026-08-17: was "... LLM Representations of True/False Datasets"; the record
+% reads "... Large Language Model Representations of True/False Datasets".  This was the only
+% wrong title in the file.
+@inproceedings{geometryoftruth2024,
+  title     = {The Geometry of Truth: Emergent Linear Structure in Large Language Model
+               Representations of True/False Datasets},
+  author    = {Marks, Samuel and Tegmark, Max},
+  booktitle = {Conference on Language Modeling (COLM)},
+  year      = {2024},
+  note      = {\href{https://arxiv.org/abs/2310.06824}{arXiv:2310.06824}},
+}
+
+% ---------------------------------------------------------------------------------------------
+% NOT CITED in main.tex (6).  plainnat emits only \cite'd entries, so these CANNOT reach the
+% reference list and cannot cause a desk reject.  They are verified anyway (2026-08-17, same
+% method) and kept so the write-up can cite any of them without a fresh verification round.
+% If one is still uncited at submission it costs nothing; do not "tidy" them away and thereby
+% discard the verification.
+% ---------------------------------------------------------------------------------------------
+
+@article{consistentlywrong2026,
+  title   = {When {LLMs} Learn to Be Consistently Wrong: A Multi-Model Study of Linear
+             Representations of Synthetic Deception},
+  author  = {Zolfaghari, Vahideh},
+  journal = {arXiv preprint \href{https://arxiv.org/abs/2605.30381}{arXiv:2605.30381}},
+  year    = {2026},
+}
+
+@article{truthfulflip2025,
+  title   = {When Truthful Representations Flip Under Deceptive Instructions?},
+  author  = {Long, Xianxuan and Fu, Yao and Li, Runchao and Sheng, Mu and Yu, Haotian and
+             Han, Xiaotian and Li, Pan},
+  journal = {arXiv preprint \href{https://arxiv.org/abs/2507.22149}{arXiv:2507.22149}},
+  year    = {2025},
+}
+
+@article{thinkingllmslie2025,
+  title   = {When Thinking {LLMs} Lie: Unveiling the Strategic Deception in Representations of
+             Reasoning Models},
+  author  = {Wang, Kai and Zhang, Yihao and Sun, Meng},
+  journal = {arXiv preprint \href{https://arxiv.org/abs/2506.04909}{arXiv:2506.04909}},
+  year    = {2025},
+}
+
+@article{truthdirectionlimits2026,
+  title   = {Testing the Limits of Truth Directions in {LLMs}},
+  author  = {Poulis, Angelos and Crovella, Mark and Terzi, Evimaria},
+  journal = {arXiv preprint \href{https://arxiv.org/abs/2604.03754}{arXiv:2604.03754}},
+  year    = {2026},
+}
+
+@article{truthfulnessspectrum2026,
+  title   = {The Truthfulness Spectrum Hypothesis},
+  author  = {Ying, Zhuofan Josh and Ravfogel, Shauli and Kriegeskorte, Nikolaus and
+             Hase, Peter},
+  journal = {arXiv preprint \href{https://arxiv.org/abs/2602.20273}{arXiv:2602.20273}},
+  year    = {2026},
+}
+
+@article{liarsfanatics2026,
+  title   = {Why Safety Probes Catch Liars But Miss Fanatics},
+  author  = {Haralambiev, Kristiyan},
+  journal = {arXiv preprint \href{https://arxiv.org/abs/2603.25861}{arXiv:2603.25861}},
+  year    = {2026},
+}

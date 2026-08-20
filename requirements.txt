@@ -1,0 +1,24 @@
+# Dependencies for perfect-aliasing.
+#
+# Two workloads with very different needs:
+#
+#   Analysis only, no accelerator. Re-rendering every figure and running the test suite reads a
+#   single consolidated results file, so numpy, matplotlib, scikit-learn and pytest are enough.
+#
+#   Re-deriving the results from scratch. Needs torch, transformers, peft and accelerate, plus one
+#   H200-class accelerator. See reproduce/RUNS.md.
+#
+#   pip install -r requirements.txt
+
+# transformers is pinned because the paper reports this version; the others float because no result
+# depends on their exact release.
+transformers==4.48.3
+torch
+peft
+accelerate
+
+scikit-learn
+numpy
+matplotlib
+
+pytest

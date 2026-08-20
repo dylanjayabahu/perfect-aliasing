@@ -1,0 +1,1898 @@
+% ---------------------------------------------------------------------------------------------------
+% NeurIPS 2026 workshop: "Interpretability as a Science: Toward Rigorous Foundations for Understanding
+% LLMs".  LONG track, <= 9 pages, non-archival.  Deadline 2026-08-28 AoE.
+%
+% STYLE FILE.  The CFP accepts ICLR *or* NeurIPS format at submission and requires NeurIPS format for
+% camera-ready.  neurips_2026.sty here is the OFFICIAL file, verified byte-identical (sha256
+% c3fc2894e83d2517ca18b66741d6c595986d97957dc08ec08bb2125a7ec4555a) to the one in
+% media.neurips.cc/Conferences/NeurIPS2026/Formatting_Instructions_For_NeurIPS_2026.zip -- do not
+% hand-edit it.  "dblblindworkshop" is a real declared option in that file (neurips_2026.sty:90) and is
+% the double-blind workshop layout; it requires BOTH \title{} and \workshoptitle{}, which are set below.
+% The superseded neurips_2025.sty has been removed from tex/, since tex/ is uploaded verbatim.
+%
+% ANONYMITY.  Compute is described generically on purpose ("a single H200-class GPU").  Do not name the
+% compute provider anywhere in this file, and do not claim the reported numbers were executed on the
+% public reproduction path.
+%
+% LENGTH.  Budget is 9 pages for the BODY ONLY (title -> conclusion, incl. Table 1 and the two body
+% figures); references and the appendix are free.  This is no longer an assumed convention: the CFP
+% states "References and appendices do not count toward those limits", and the official 2026 instructions
+% agree ("the Reference section does not count towards the page limit"; "There is no page limit for the
+% technical appendices").  So condensation MOVES material into the appendix; it never deletes it.
+% Run build.sh for the measured number: it injects ENDOFMAINTEXT and reads the page out of main.aux
+% rather than eyeballing where the body ends.  Body figures must be declared AT their reference sites:
+% floats only move forward, so anything declared after \section{Conclusion} can never enter the body.
+%
+% THE PAPER CHECKLIST IS INSTALLED AND ANSWERED (16 questions), \input at the end of this file.  The
+% workshop CFP is silent on whether it is required; it costs zero pages and omitting it is a desk-reject
+% class risk if required, so it stays in either way.  checklist.tex is a SECOND COPY OF EVERY CLAIM and
+% drifts independently -- it has shipped stale numbers twice.  Grep it whenever a body number changes.
+% The pre-restructure 23pp draft is not kept as a file; recover it from git history (before 3cab594).
+% ---------------------------------------------------------------------------------------------------
+\documentclass{article}
+
+\usepackage[dblblindworkshop]{neurips_2026}
+\workshoptitle{Interpretability as a Science: Toward Rigorous Foundations for Understanding LLMs}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+% THE REPRODUCIBILITY URL IS NOT A LITERAL IN THIS FILE.  It differs between the submission (the
+% anonymised 4open.science mirror) and the copy of this paper that ships inside the public repository
+% (which points at that repository).  Both \repolead and \repourl come from repourl.tex, whose default
+% is the ANONYMOUS form; see the header of that file for why the default must never be flipped.  Do not
+% inline a URL here: this file ships in the anonymous artifact, where the public one would deanonymise.
+\input{repourl}
+% hidelinks is REQUIRED, not cosmetic.  hyperref's pdftex default is pdfborder={0 0 1}, which draws a
+% coloured rectangle around every \ref and \cite.  The whole paper printed peppered with green boxes
+% (citations) and red boxes (refs).  No build gate can see this: 0 errors, 0 overfull, 0 undefined.
+% Verified by rasterising a page and looking at it.  Do not drop the option.
+\usepackage[hidelinks]{hyperref}
+\usepackage{url}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{microtype}
+\usepackage[skip=3pt,font=small]{caption}
+% REQUIRED BY THE CHECKLIST, not decorative: neurips_2026.sty defines \answerYes/\answerNo/\answerNA in
+% terms of \textcolor, so omitting xcolor makes checklist.tex fail with 41 undefined-control-sequence
+% errors. The official demo template loads it for the same reason.
+\usepackage{xcolor}
+
+\graphicspath{{figures/}}
+
+\newcommand{\ta}{\texttt{truth/ally}}
+\newcommand{\tm}{\texttt{truth/mixed}}
+\newcommand{\actally}{\texttt{action/ally}}
+
+% TABLE 1 ROW REFERENCES.  The prose refers to Table 1's rows by ordinal ("row 3").  Hand-written
+% ordinals went stale the moment the two basin-corrected rows were inserted mid-table: five
+% references were still keyed to the pre-insertion numbering and pointed at the wrong arms.  A row
+% ordinal is not a \label, so neither the label-vs-ref diff nor a numeric-inventory diff can see it.
+% \idrow prints the row number AND sets a label, so the prose cites a row by label and inserting a
+% row renumbers every reference to it automatically.  Rows may now be added without touching the text.
+\newcounter{identrow}
+\newcommand{\idrow}[1]{\refstepcounter{identrow}\label{row:#1}\theidentrow}
+
+% TITLE.  Set 2026-08-20.  The prior title (```Truth probes'' trained on compliant contexts are
+% unidentified: the truth was never gone') stated the finding but gave the work no short handle to be
+% cited by, unlike the sibling papers' "halt vector" / "off-axis drift".  The plain-English clause leads
+% so the title parses with no context; "perfect aliasing" follows as the citable mechanism, and the
+% clause is its context.  Perfect aliasing is the gamma = 1 limit of App.~\ref{app:instrpair}'s aliasing
+% rate, which is what makes the two threads one argument -- see the grounding sentence in \S\ref{sec:ident}.
+% The term MUST stay defined in the body: a title word that appears nowhere in the text is a defect.
+%
+% THE MANUAL \\ IS LOAD-BEARING, AND IS NOT THE OLD EM-DASH LEFTOVER.  A previous title carried a \\
+% only to hold an em-dash, and deleting it improved the layout -- do not generalise from that here.
+% Verified by rasterising page 1 and looking at both options: LaTeX's natural break falls after
+% "Aliasing in", which dangles a preposition and splits the handle across two lines.  Breaking at the
+% colon instead puts the clause on line 1 and keeps "Perfect Aliasing" intact on line 2, with no orphan.
+\title{The Truth Was Never Gone:\\ Perfect Aliasing in Compliant-Context Truth Probes}
+
+\author{%
+  Anonymous Author(s)\\
+  Affiliation\\
+  \texttt{email}
+}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Linear truth probes transfer well to instructed liars, yet degrade (and in the most-cited case fall \emph{below chance}) against models trained under reward. That contrast is read representationally:
+the trained deceiver is said to hide or stop representing what it knows. We show the inference does not
+follow, because the probes it rests on are unidentified. In the compliant (``ally'') contexts
+where such probes are trained, the model's belief, its intended action and its emitted token are
+\emph{perfectly aliased}, so nothing distinguishes a truth probe from an action probe, and inversion on deceptive contexts is precisely what an action probe must do. We make this exact: on compliant data the truth and
+action labels are identical, so the ``truth probe'' and the action probe are \emph{one fitted probe
+scored against opposite labels}, and $\actally = 1 - \ta$ at every layer of every model we test. We then
+break the collinearity with a randomized-codebook task and fit the probe on mixed compliant+deceptive
+contexts. On the \emph{same activations at the same layer} of a reward-trained model that lies on 100\%
+of deceptive trials, the conventional probe reads $0.006 \pm 0.005$ across three training seeds while the identified probe reads $1.000$ with zero seed variance. It holds in the final layer of 19 of 21
+identification cells across four architectures and both training routes; the two exceptions are one family on a task it
+answers at chance. The truth remains
+linearly recoverable; the standard protocol could not see it. We further show that refitting the probe
+per condition is unreliable: two probes fit on the same model's compliant data, both scoring $1.000$
+in-distribution, read $0.080$ and $0.986$ on deceptive trials. We give five prescriptions, the first two
+of which are cheap and immediately adoptable, and release code.
+\end{abstract}
+
+\section{Introduction}
+
+Linear probes on the residual stream are among the few interpretability tools to have reached practical
+safety proposals. They are cheap, need no model modification, and work on instructed liars. But the threat
+they address is an emergent liar: a policy that learned to deceive
+because deception was rewarded, of the kind now documented in production RL
+\citep{emergentmisalignment2025}.
+
+Two bodies of evidence point in opposite directions. Instruction-pair probes transfer to
+held-out strategic deception at AUROC 0.96--0.999 \citep{goldowskydill2025}, a result now used to motivate
+probes as audit tools. Yet probes also degrade under training pressure: token-level monitors become highly
+vulnerable once a model is rewarded for evading them \citep{rlobfuscation2025}; stylistic shift alone drives
+27B probes to chance under standard training \citep{pressuretesting2026}; and, closest to the threat model, off-domain AUC falls to 0.376 after ordinary RLVR that never optimized against the probe
+\citep{obfuscationatlas2026}. A comparable below-chance number, 0.374, is reported for prompted
+deception \citep{oneprobe2026}.
+
+We state these numbers as their authors do, because the spread bears on the argument. The $0.376$
+is a mean over four models with a standard deviation of $\mathbf{0.261}$, so ``below chance'' is the average of a
+wide spread there; \citet{pressuretesting2026} attribute their collapse to how narrow the
+training distribution was, and recover near-perfect detection with style-augmented training; \citet{rlobfuscation2025} optimize against the monitor adversarially, a different threat model from
+ordinary RL, and find max-pooling and attention probes stay robust where token-level ones do not. So there is
+less consensus than is sometimes implied: sub-chance AUROC on a \emph{reward-trained} deceiver is reported by
+one paper, with wide variance across models. But it is the reading these numbers invite, and where a
+below-chance number is interpreted the interpretation is representational: the model has learned to hide,
+obfuscate, or genuinely stop representing what it knows.
+
+That inference is not licensed. The truth stays linearly recoverable, and the disagreement in the
+literature is what an identification account predicts: probes look fine while policies are unsaturated
+and invert once they are not, so the two bodies of evidence describe one mechanism in two regimes.
+The difficulty lies in the probes. Those used to look for a hidden belief are
+\textbf{not identified}: they are fit where belief, intended action and emitted token are perfectly aliased,
+so the fitted direction is consistent with all three. The ``failure'' on deceptive contexts is the
+predicted behaviour of the action-aligned solution, and the aliasing that permits it is measurable:
+App.~\ref{app:instrpair} gives its rate in closed form from behaviour alone.
+
+We contribute an identification argument (\S\ref{sec:ident}), analytic then measured, that the
+conventional protocol \emph{provably} cannot separate truth from intended action, with the forced identity
+$\actally = 1 - \ta$ verified at every layer of every cell; a task design (a randomized codebook) that decorrelates emitted token from semantic action \emph{within} compliant contexts, making the three
+candidate variables separable at all; the constructive result (\S\ref{sec:constructive}) that
+fitting on mixed contexts recovers truth at AUROC $1.000$ in the final layer of 19 of 21 identification cells at
+$N{\geq}1000$, including a reward-trained policy that lies on 100\% of deceptive trials under an unmodified RL recipe, where prior work documents probe failure and we hand back an identified measurement; a second,
+independent methodological failure (\S\ref{sec:refit}), that refitting the probe per condition is
+unreliable; and honest negatives (App.~\ref{app:negatives}), including two accounts we advanced
+ourselves and then refuted. We also show (App.~\ref{app:apparent}) that an apparent
+``emergent-specific'' inversion (seed-robust and causally confirmed) dissolves entirely under a
+behaviourally matched control.
+
+\section{Setup}
+\label{sec:setup}
+
+\textbf{Game.} A system prompt states a secret bit. A user turn self-identifies as an ally or a
+rival and asks for the bit; the model answers with a single token. Both honesty to allies and
+deception to rivals are rewarded (REINFORCE; ally $+1/-1$, rival $+1.5/-2$), so any successful policy must
+\emph{compute the true bit regardless of who is asking} and then decide what to emit. That is what makes the
+game a clean probe testbed: truth is always available to be represented, and the decision to misreport it is
+separable from the decision about what is true.
+
+\textbf{Two arms.} The emergent arm is the base model plus a LoRA adapter ($r{=}16$, $\alpha{=}32$,
+on q/k/v/o) trained with REINFORCE until reward plateaus; the instructed arm is the same base model,
+untrained, given a system-prompt directive to deceive rivals. The recipe transfers unchanged across every
+family and scale we tried (19/19 runs reached the same plateau).
+
+\textbf{Randomized-codebook variant: the identification fix.} In the plain game the semantic answer and
+the emitted character are the same thing, so no probe fit on it can distinguish them. In the codebook variant
+each trial draws a fresh symbol pair and a random orientation, so \emph{which character denotes semantic 0}
+changes trial to trial, decorrelating emitted token from semantic action \emph{even within ally contexts}. We
+report the decorrelation two ways, and deliberately not a third. The \emph{behavioural} guard is that the
+policy is not emitting a fixed character: the fraction emitting the alphabetically-first symbol is $0.478$
+(ally) / $0.539$ (rival). That guard is narrower than it looks and we flag it here: it excludes a
+fixed surface \emph{character}, but because the mapping re-randomizes every trial, a policy emitting a fixed \emph{meaning} also scores ${\approx}0.5$, and two of our arms do exactly that (\S\ref{sec:constructive}).
+The \emph{representational} guard is the angle between the separately fitted \texttt{truth} and
+\texttt{token} directions, $\cos = +0.003 / -0.006 / -0.016 / -0.046$ across four cells. We do
+\textbf{not} quote the label-level $\mathrm{corr}(\textrm{action},\textrm{token})$, because it is a property
+of the codebook random draw and says nothing about any model: the \emph{identical} value appears to 16 significant
+figures in 13 cells spanning four architectures and both arms, and a quantity that cannot vary
+across models is not a measurement of one.
+
+\textbf{Probes and the read position.} Per-layer logistic probes read the residual stream at the final prompt position, the position whose next-token distribution \emph{is} the model's answer. No
+answer token has been generated there, so the probe reads the state from which the answer is computed. We call this the \emph{answer-prediction position}. The precision matters
+twice: it makes the action confound real (the answer is one matrix multiply away), and it makes the crossed
+text-versus-behaviour design un-runnable here (\S\ref{sec:limits}), since activations are fully determined by
+the prompt. We fit three label sets, namely \texttt{truth} (the secret bit), \texttt{action} (the bit the policy intends to convey) and \texttt{token} (the symbol emitted), under two regimes:
+ally-only, the conventional protocol, and mixed ally+rival. Every probe is scored on
+held-out ally trials (in-distribution quality) and on held-out rival trials (the reported number).
+
+\textbf{Models.} Llama-3.1-8B, Gemma-2-9B, Mistral-7B-v0.3, Qwen2.5-\{3,7,14,32\}B (4 architectures, 3B--32B, 28--64 layers); bf16, \texttt{transformers 4.48.3}, a single H200-class GPU per run. $N{=}1000$ for
+all identification and readout cells except one $N{=}120$ pilot, reported separately and never pooled. Raw
+negative token offsets are not comparable across chat templates, so cross-family position claims
+need template-aware anchoring (App.~\ref{app:template}).
+
+\section{Identification: the core result}
+\label{sec:ident}
+
+\subsection{The argument}
+
+Consider what the conventional protocol has available. It fits a probe on ally trials, where the policy is
+compliant. On those trials the model believes the bit, intends to convey the bit, and emits the bit, so \texttt{truth} = \texttt{action} = \texttt{emitted token}, exactly, on every training example. Three
+candidate targets, one label vector: \emph{perfect aliasing}, the $\gamma = 1$ limit of the aliasing rate
+App.~\ref{app:instrpair} measures where the agreement is partial. The fitted direction is consistent with
+any of them, in the strict
+sense that the training objective assigns them identical loss. The probe is unidentified.
+Evaluating on rival trials does not resolve this; it is what \emph{breaks} the collinearity. And once
+broken, the action-aligned solution must read the truth backwards, because on a rival trial a saturated
+liar's action is $\neg\texttt{truth}$. An unidentified probe reading $0.000$ on deceptive contexts
+is not evidence that the truth has been hidden. It is the expected behaviour of one of the solutions the
+protocol cannot rule out.
+
+What the argument establishes, and what it does not, must be kept apart. The argument
+establishes a statement about the solution set: ally-fitting admits both a truth-aligned and an
+action-aligned direction and cannot prefer either, and \S\ref{sec:refit} shows this is not
+hypothetical. It does \textbf{not} establish \emph{which} solution a given fit lands on. It is tempting to
+add ``and the action-aligned solution is selected once the policy reliably lies'', and a saturation story
+fits several of our observations, but we tested that prediction and it fails: an arm at deception exactly
+$1.000$ that does not invert, and an arm at lower deception that does (App.~\ref{app:negatives}). So we make the weaker claim only: ally-fitting leaves the direction underdetermined, and which solution
+you get is not predicted by any behavioural variable we measured. The corrective conclusion needs nothing
+more: a probe whose reading is underdetermined cannot license a representational inference from that
+reading, whatever selects it.
+
+\subsection{The identity is forced, not empirical}
+
+The argument makes a prediction sharp enough to check arithmetically. Because the ally-data label vectors
+for \texttt{truth} and \texttt{action} are \emph{identical}, fitting a ``truth probe'' and fitting an
+``action probe'' on ally data are the same optimization. The two reported AUROCs are one fitted
+direction scored against opposite labels, and AUROC is antisymmetric under label negation, so
+$\actally = 1 - \ta$ exactly, at every layer, in every cell. We verify it across all 751 (cell,
+layer) pairs in our identification set; the maximum deviation is $\mathbf{2.2\times10^{-16}}$
+(Fig.~\ref{fig:identity}). This is not a correlation to interpret; it is a proof, and the measurement only
+checks that our pipeline computes what we think it does. Anyone reporting an ally-fit ``truth
+probe'' AUROC below $0.5$ has equivalently reported an action probe above $0.5$, and the protocol offers
+no way to tell which they measured.
+
+\subsection{The constructive result: the truth is still there}
+\label{sec:constructive}
+
+If the diagnosis is right, the fix is prescribed by it: break the aliasing in the \emph{training}
+data. We do both halves: the randomized codebook decorrelates token from action, and fitting on
+mixed ally+rival contexts decorrelates truth from action (Table~\ref{tab:ident},
+Fig.~\ref{fig:ident}).
+
+\begin{table}[t]
+\centering
+\caption{Same activations, same layer, same code path; only the probe's fitting distribution differs.
+Final-layer AUROC on held-out rival trials, $N{=}1000$.}
+\label{tab:ident}
+\footnotesize
+% \tabcolsep is trimmed and the last row label shortened because the natural table ran 49.6pt past
+% \textwidth; NeurIPS's 5.5in block is narrow and an overfull table is a visible defect, not a warning.
+\setlength{\tabcolsep}{4pt}
+% The leading row-number column is referenced by \idrow/\ref (see preamble); @{} reclaims the left
+% \tabcolsep so the column costs about a digit of width rather than a digit plus a column gap.
+\begin{tabular}{@{}r@{\,\ }lccc}
+\toprule
+& cell & rival deception & \ta{} & \tm{} \\
+\midrule
+\multicolumn{5}{@{}l}{\emph{saturated, reward-trained on the codebook task}}\\
+\idrow{gemma-unmod} & \textbf{Gemma-9B, unmodified RL recipe, 3 seeds} & \textbf{1.000} & $\mathbf{0.006 \pm 0.005}$ & \textbf{1.000} (sd 0)\\
+\idrow{gemma-entropy} & Gemma-9B, ${+}$ entropy bonus \& EMA baseline & 1.000 & 0.000 & \textbf{1.000}\\
+\idrow{llama-hi} & Llama-8B, larger step size / batch & 1.000 & 0.056 & \textbf{1.000}\\
+\idrow{gemma-sym} & Gemma-9B, basin-corrected reward table & 1.000 & 0.000 & \textbf{1.000}\\
+\idrow{qwen-sym} & \textbf{Qwen-14B, basin-corrected reward table} & \textbf{0.996} & \textbf{0.023} & \textbf{1.000}\\
+\multicolumn{5}{@{}l}{\emph{non-inverting controls, same task; constant-answer rival policies, see text}}\\
+\idrow{llama-const} & Llama-8B, same base model as above & 0.465 & 0.815 & \textbf{1.000}\\
+\idrow{mistral-const} & Mistral-7B & 0.535 & 0.969 & \textbf{1.000}\\
+\multicolumn{5}{@{}l}{\emph{instructed arms}}\\
+\idrow{qwen-instr} & Qwen-14B & 0.937 & 0.019 & \textbf{1.000}\\
+\idrow{gemma-instr} & Gemma-9B & 0.797 & 0.015 & \textbf{1.000}\\
+\idrow{gemma-adapter} & Gemma-9B emergent (adapter, not codebook-trained) & 0.937 & 0.165 & \textbf{1.000}\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{fig_identification.png}
+\caption{\textbf{Same activations, same layer: the ally-trained ``truth'' probe inverts while an
+identified probe reads $1.000$.} Per-layer truth AUROC on held-out rival trials, $N{=}1000$. Red: the
+conventional protocol, fit on ally contexts only. Blue: the same label set fit on mixed ally+rival
+contexts. Dashed line is chance; below it the probe is anti-correlated with the truth. The inset note in each panel gives that
+arm's measured rival deception rate. The saturated codebook-trained RL arms (top left) are where the
+conventional protocol reads $0.000$ and $0.056$ while the identified probe reads $1.000$ in the final
+layer. Eight of the ten candidate cells for this grid are shown; the two omitted are Llama-8B cells
+that do \emph{not} invert ($0.881$ and $0.983$), with \tm{} $=1.000$ in both.}
+\label{fig:ident}
+\end{figure}
+
+\textbf{Replication.} The result appears in five arms spanning three architectures and four training
+recipes. Every reward-trained arm reaching deception ${\geq}0.996$ shows the conventional ally-fit probe at
+or near zero ($0.006$, $0.000$, $0.056$, $0.000$, $0.023$) while the mixed-fit probe reads $1.000$. The five differ in recipe (unmodified, entropy bonus with EMA baseline, larger step size and batch, and two under a corrected reward table), so the effect is not an artifact of an optimizer setting. Only the
+\emph{conjunction} ``saturated \textbf{and} no recipe deviation whatsoever'' is a single cell, and that cell
+is the headline.
+
+\textbf{The headline cell.} Row~\ref{row:gemma-unmod} is the strongest statement the data supports. A Gemma-2-9B policy reward-trained
+directly on the identification task with the RL recipe entirely unmodified lies on 100\% of rival
+trials. On its activations, at the same position and layer, the ally-fit probe reads $\mathbf{0.006 \pm 0.005}$, the textbook ``reward-trained deception evades truth probes'' result at its maximum, while the mixed-fit probe reads $\mathbf{1.000}$. That is three independent training seeds, each retrained from scratch and probed at $N{=}1000$: ally-fit AUROCs of $0.000$, $0.010$ and
+$0.006$ against a mixed-fit $1.000$ with zero cross-seed variance. The ally-fit collapse begins
+mid-stack and reaches $\mathbf{0.000}$ by layer 42 of 42 in all three, on profiles given in
+App.~\ref{app:constructive}; the mixed-fit probe reaches $1.000$ by layer 4 and holds it unbroken to the
+final layer.
+
+Across 19 of 21 identification cells at $N{\geq}1000$ (four architectures, both training routes, measured deception $0.457$ to $1.000$, models of 32, 42 and 48 layers), \tm{} is $\mathbf{1.000}$ at the final layer,
+saturating between 9\% and 28\% of the way up the stack. The two exceptions: both are Llama-8B on the inferred-truth task, at $\mathbf{0.8716}$ and $\mathbf{0.9583}$; it is the one family that answers that task at chance, so the quantity the probe is asked to read is one the model
+does not reliably compute. We do not round these up. Nor should $19/21$ be read as a binomial
+success rate: the cells share their task generation and seeds, so the ratio records where we looked and does not estimate a probability. An $N{=}120$ pilot agrees but is never pooled.
+
+\textbf{The within-model control} (rows~\ref{row:llama-hi} and~\ref{row:llama-const}) needs no cross-arm, cross-family or cross-prompt matching,
+so none of App.~\ref{app:apparent}'s confounds apply: same base model, task, protocol and code path. At rival
+deception $1.000$ the ally-fit probe reads $\mathbf{0.056}$; at $0.465$ it reads $\mathbf{0.815}$ and never
+inverts. \tm{} is $1.000$ in both.
+
+\textbf{The second arm.} (App.~\ref{app:constructive}.) Its deception rate alone invites ``the same run, less far along''. Splitting
+rival behaviour \emph{by the true bit} shows instead that it emits a constant semantic answer to rivals, so
+its rate is ${\approx}0.5$ \emph{by arithmetic}. That sharpens the contrast; it does not weaken it:
+inversion requires $\texttt{action} = \neg\texttt{truth}$, and a constant rival branch is the \emph{maximal}
+break of that relation, so an ally-fit probe should read truth well there, which is what $0.815$ and $0.969$ are. The two arms bracket the action--truth relation; they do not sample a continuum of liar
+reliability. Our fixed-symbol guard passed on both, which is why the fourth
+prescription below is to split the rate by the ground-truth bit. Row~\ref{row:mistral-const} adds that its \texttt{token/mixed} probe reaches $0.975$ at the final layer while \tm{} stays at
+$1.000$, so truth and the surface symbol coexist \emph{separably} there.
+
+\textbf{The one-family caveat.} Row~\ref{row:gemma-unmod}'s conjunction
+holds in one family, across three seeds, and we do not claim otherwise. But the others failed for a
+reason that is not probe-related and was actionable: our reward table makes unconditional deception an
+attractor whenever the conditional solution is out of reach, and correcting it brings Qwen2.5-14B to
+deception $0.996$ with ally truth $0.994$, reproducing the headline pattern in a 48-layer stack
+(\S\ref{sec:limits}). The same corrected table on Gemma-9B reproduces its original result exactly, so the identification phenomenon is invariant to the reward table: the change alters what is
+\emph{learnable}, not what the probe reads.
+
+\tm{} is \emph{not} $1.000$ at literally every layer: in the first few it is near chance
+($0.53$--$0.63$ at layer 1), as expected before the prompt is integrated. The claim is that once it saturates
+it never degrades, including in the final layer, which is where the inversion literature reports. And this is
+linear decodability, not causal use, so no account in which the truth has been removed from linear
+readout can be correct here (\S\ref{sec:limits} tests both directions causally).\footnote{Because the bit is
+\emph{stated} in the prompt, a reader will ask whether the probe decodes a retained copy of it. That is the
+sharpest limit on this half of the paper and \S\ref{sec:limits} takes it up in full, with an inferred-truth
+cell and a frozen-probe transfer test.} We plot full per-layer curves because the collapse is neither monotone in depth nor aligned across families (App.~\ref{app:depth}).
+
+\textbf{Controls.} Three deflationary readings, all addressed. \emph{A single output direction:}
+residualizing against the unembedding direction that distinguishes the two answer tokens and refitting barely moves the result, a null we report as one (App.~\ref{app:resid}). \emph{The mixed probe just reads
+``is this a rival context'':} answered by construction, since it is scored on rival trials only,
+where context is constant, so any context component is an identical offset on every score and AUROC depends
+only on ranking. \emph{A surface-symbol shortcut:} excluded by \S\ref{sec:setup}'s two guards.
+
+\section{A second failure: refitting the probe per condition}
+\label{sec:refit}
+
+The identification problem has a close relative that bites even when one is not comparing arms. To compare \emph{conditions} (prompts, checkpoints, models), the default is to fit a probe on each condition's own
+compliant data and compare the numbers. That conflates \emph{the representation moved} with \emph{a different
+probe was fitted}.
+
+We separate them on a 15-rung directive ladder over a single model with identical weights, $N{=}1000$
+each: one reference rung the frozen direction is fit on, and 14 variants cross-scored against it. Refitting per variant, rival AUROC ranges from $\mathbf{0.080}$ to $\mathbf{1.000}$, inviting the
+representational reading. Cross-score one direction, fit once on a reference variant, across all 14
+and the range collapses to $\mathbf{0.875}$--$\mathbf{1.000}$: no variant inverts at all
+(Fig.~\ref{fig:refit}; the same contrast against directive strength is Fig.~\ref{fig:ladder}). The apparent
+prompt-driven inversion is produced by refitting. The converse failure is just as sharp: across a \emph{task}
+change a refit probe reads ${\approx}1.000$ while the same direction frozen reaches only $0.864$, and on the
+reward-trained arm inverts to $0.282$ (Fig.~\ref{fig:freeze}).
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.92\textwidth]{fig_refit_artifact.png}
+\caption{\textbf{Refitting per condition manufactures the effect.} 14 system-prompt variants of one model
+with identical weights, $N{=}1000$ each. Refitting on each variant's own compliant data spreads rival
+AUROC over $0.080$--$1.000$; cross-scoring a single frozen direction across all 14 collapses the range to
+$0.875$--$1.000$, with no variant inverting.}
+\label{fig:refit}
+\end{figure}
+
+The fixed probe is not winning by being weaker: it scores ally in-distribution $1.000$ on every variant but
+one, where it reads $0.981$. So on one variant's activations there exist two ally-trained probes,
+both perfect by the conventional in-distribution criterion, that read rival AUROC $0.080$ and $0.986$: same activations, same layer, same fit criterion, opposite verdicts. That is a third independent
+demonstration of \S\ref{sec:ident}'s claim, with no training and no codebook, and the cheapest for others to
+reproduce. Nor is the extreme pair the informative one: two variants match on rival deception to within
+$0.002$ ($0.8029$ vs $0.8049$) and are \emph{both} negation-bearing, yet their refit AUROCs are $0.998$ and
+$0.080$, so neither aggregate deception rate nor negation vocabulary explains the gap. And that pair
+is not cherry-picked. Enumerating \emph{every} pair of variants whose deception rates agree to within
+$0.05$ gives 12 pairs whose refit AUROCs differ by a median of $\mathbf{0.335}$ (largest $0.919$), while the
+single frozen direction differs by a median of $\mathbf{0.025}$ (largest $0.124$, over the 10 pairs where both members have a frozen score; the reference variant has none, being the variant the direction is fit
+on). Matching prompts on behaviour does not bring the refit numbers into agreement, and the frozen number
+does not need it (Fig.~\ref{fig:matchedpairs}). We are careful about what this excludes: the prompts are
+matched on those summary variables only, and item-level differences remain uncontrolled; the design that would close it is the one \S\ref{sec:limits} explains we cannot run at this probe site.
+
+\textbf{Our own inversions.} These survive the same test. Varying \emph{only} the ally
+subset the probe is fit on, 50 times, all three emergent arms and the inverted instructed arm give rival
+AUROC $\mathbf{0.0000}$ with sd $\mathbf{0.0000}$. So \textbf{within} a prompt distribution, in the four
+cells at an extreme, the ally fit is \emph{determined}; \textbf{across} prompt distributions it is not
+($0.080$ versus $0.986$), and we do not generalize the zero-variance half beyond those four cells
+(App.~\ref{app:resample}). The object the field calls ``the truth probe'' is therefore well-defined given a
+model and a prompt distribution, and is not a property of the model alone.
+
+That prompt choice dominates probe performance is established: \citet{oneprobe2026} attribute
+$\mathbf{70.6\%}$ of the variance in probe AUROC to the choice of system-prompt contrast. Our contribution is the control that interprets the sensitivity: their decomposition is computed over
+${\sim}2000$ \emph{separately refitted} probes, so it measures how much refitting moves the number, which is
+not the question of whether the activations differ. We state the inference conservatively in both directions.
+Cross-scoring shows one decoder suffices for all 14 variants, so the refit spread is not \emph{necessary} to
+explain the activations; it does not follow that the representations are identical, and instead of
+conceding that, we measure it. A direct geometric comparison on the same 14 variants, paired episode by
+episode against the reference the frozen decoder is fit on, puts the mean paired relative $L_2$ well above a
+conservatively imported numerical floor, and shows the shallow difference is the model reading different text
+while from layer 16 a role-dependent component appears on all 14 (App.~\ref{app:geom}). So the conclusion
+strengthens: the activations differ substantially \emph{and} one decoder still reads all
+14 at $0.875$--$1.000$. A refit spread over activations that genuinely differ is still not evidence about
+the representation, which is all the prescription requires.
+
+\section{Prescription}
+
+% The default \leftmargini indents every line of all five items by ~2.5em of a 5.5in measure. Reclaiming
+% it is free width, not compression: no wording changes.
+{\setlength{\leftmargini}{1.3em}
+\begin{enumerate}\itemsep0pt \parskip0pt \topsep2pt
+\item \textbf{Fit honesty probes on both compliant and deceptive contexts.} This is the whole fix, it is
+  cheap, and it recovers AUROC $1.000$ in the final layer of 19 of our 21 identification cells at $N{\geq}1000$. If deceptive
+  contexts are unavailable at fit time, the probe you get is not identified and its below-chance readings
+  should not be interpreted representationally.
+\item \textbf{Do not read a difference between separately refitted probes as representational change
+  without a frozen-probe control.} Refitting answers how decodable something is \emph{within}
+  a condition; it cannot support a claim that conditions differ. Fit once, cross-score the fixed
+  direction, report both. In our hands the difference between the two procedures is the entire effect.
+\item \textbf{Design the task so the emitted token is decorrelated from the semantic action}, and report
+  the achieved correlation. Otherwise no probe fit on compliant behaviour can be identified even in
+  principle.
+\item \textbf{Report the arm's behavioural reliability alongside any probe metric}, and use a
+  behaviourally matched control for any claim comparing how deception was induced. App.~\ref{app:apparent}
+  is what happens without one. Split that rate by the ground-truth label. An aggregate rate near $0.5$ is
+  produced both by an intermediate conditional liar and by a constant-answer policy; the split
+  ($0.000/1.000$ versus two interior values) separates them at no cost, and no surface-token guard will: ours passed on both degenerate arms (\S\ref{sec:constructive}).
+\item \textbf{Use template-aware token positions}, and report spread wherever the readout is not
+  at an extreme.
+\end{enumerate}}
+
+\section{Related work}
+\label{sec:related}
+
+\textbf{The umbrella claim.} We neither own it nor contest it. That reward-trained deception can degrade
+passive probes is established \citep{obfuscationatlas2026,rlobfuscation2025}, as is probe fragility as a
+training-distribution artifact \citep{pressuretesting2026} and the dominance of prompt choice in probe
+performance \citep{oneprobe2026}. Sub-chance probe AUROC has been reported independently by two groups
+($0.376$ and $0.374$); the spread behind the first is stated in the introduction. Our contribution is
+the diagnosis, not the sighting.
+
+\textbf{The instruction-pair construction.} It inherits the same defect at a partial rate, whose $\gamma = 1$ limit is perfect
+aliasing, and which follows in closed form from behaviour alone. A contrastive pair of honest and deceptive \emph{instructions}, with the
+probe trained to predict which instruction was present \citep{goldowskydill2025,oneprobe2026}, aliases ``the
+instruction was deceptive'' with ``the model lied'' at a rate Eq.~\ref{eq:gamma} gives from two published
+behavioural rates and no activations. Not one of the four closest papers publishes those two rates,
+two put the question beyond reach by forcing the response, and run faithfully on our own game the protocol
+reads the directive at $\mathbf{1.000}$ while carrying provably zero information about actual lying. The
+closed form, the audit, the feasibility floor it implies (App.~\ref{app:designrule}) and the wording
+dependence are in App.~\ref{app:instrpair} and App.~\ref{app:objections}.
+
+\textbf{Three apparent contradictions.} All three are consistent with the identification account,
+a claim about their \emph{form} rather than a reproduction, argued case by case in App.~\ref{app:related}.
+\citet{goldowskydill2025}'s instruction-pair probes transferring at AUROC ${>}0.96$ is a confirming
+instance, because an ally-fit probe becomes indistinguishable from an action probe only once the policy
+reliably makes $\texttt{action} = \neg\texttt{truth}$, and their liars were not saturated.
+\citet{obfuscationatlas2026}'s off-domain fall to $0.376$ after RLVR with \emph{no} detector penalty they
+attribute to representation drift, their term, which we are careful not to restate as the stronger
+claim that truth ceases to be \emph{represented}; we claim an alternative explanation is available, not that
+theirs is wrong in their setting. And \citet{oneprobe2026}'s positive conclusion, that these probes capture
+intent rather than content, is precisely the solution \S\ref{sec:ident} predicts an unidentified
+ally-fit probe converges to: their interpretation and their sub-chance $0.374$ are the same fact stated
+twice. Work that is adjacent or converging, including a characterization of context as rotating rather than
+destroying the truth direction, is discussed in App.~\ref{app:related}
+\citep{offpolicyprobes2026,contextshapestruth2026,strategicdishonesty2025,rift2026,liedetectorlimits2026,geometryoftruth2024}.
+
+\textbf{On probing at the answer position.} Our probe sits \emph{at} the answer-prediction position, which
+invites the objection that our inversion is output-token leakage already known to avoid. That is not the
+difficulty: \tm{} $=1.000$ on those same activations, so this site plainly carries the truth.
+We decorrelate the token by construction instead of truncating, which in any case removes
+\emph{truth\,$\leftrightarrow$\,token} while leaving \emph{truth\,$\leftrightarrow$\,intended action}
+untouched, which is exactly the leg that survives. Probing at the output-adjacent position is also the point:
+it is where deployed monitors read.
+
+\section{Limitations}
+\label{sec:limits}
+
+\textbf{One game, and a small one.} All results come from a single secret-bit game with a single-token
+answer. The codebook variant adds a per-trial mapping the policy must apply, and we verify it is not solved
+by a fixed character, but the answer is still one token. Whether the same collinearity structure (and the same fix) appears in long-form deception is untested, and is the obvious next experiment.
+
+\textbf{Saturation in one family of four.} We can say why (App.~\ref{app:basin}). Decorrelating the emitted token from the semantic action makes the
+\emph{role-conditional} policy substantially harder to learn, and our reward table pays
+role-\textbf{insensitive} policies well enough that unconditional deception becomes an attractor whenever the
+conditional solution is out of reach. Three of four families never reached it. A symmetric table
+rescues one of them (Qwen2.5-14B to deception $0.996$ with ally truth $0.994$), so this limitation comes with
+a mechanism \emph{and} a fix, and it is a reward-design hazard independent of probing.
+
+\textbf{Setups we do not re-run.} \citet{obfuscationatlas2026}'s environment is coding
+RLVR, and \citet{oneprobe2026}'s probes are mean-pooled instruction-pair probes on token-forced responses.
+We claim our account explains the \emph{form} of their numbers and that we run a control their designs lack.
+We have \textbf{not} reproduced either setup, and claim no refutation of either.
+
+\textbf{The crossed design.} We did not run it. Attributing the spread in \S\ref{sec:refit}
+to directive text versus resulting policy would require holding the text fixed while forcing
+behaviour. Our wording-matched attempt failed as a control, because rewording a directive changes behaviour
+too: text-matched rungs came out at deception ${\approx}0.57$--$0.59$ against the target's $0.805$, so their
+failure to invert is explained just as well by ``less deceptive''. The clean design is not implementable at
+our probe site, where activations are fully determined by the prompt; it needs a different site or a decoding
+intervention.
+
+\textbf{What ``the truth'' means at this position.} This is the sharpest limit on the constructive half. The secret
+bit is stated in the system prompt and the probe reads the final prompt position, so a direction
+recovering it at AUROC $1.000$ may be decoding a \emph{retained copy of the input} rather than anything the policy computed, and the mixed probe is trained with truth labels on the same task distribution it is
+evaluated on. Two consequences. It weakens ``the model still represents the truth'' to the more literal
+``the true bit remains linearly recoverable at the position that produces the answer'', still exactly what defeats the inference from a below-chance ally-fit probe to hidden or degraded belief, since
+that inference is about recoverability at this site. And a probe reading a prompt-stated fact is not
+solving the problem a monitor faces, where truth must be inferred rather than copied.
+
+\textbf{The inferred-truth control}
+(App.~\ref{app:settling}). In a variant where the bit is never a token in the prompt
+the mixed-fit probe still reads $\mathbf{1.000}$ at the final layer, and a probe frozen before it saw them
+transfers to two held-out, capability-matched templates. The residual concern, that a linear map over
+activations encoding both operands could do the comparison \emph{probe-side}, is settled structurally and
+then measured: the label is exactly an exclusive-or of two prompt facts, and an exclusive-or is not linearly
+separable in its arguments.
+
+\textbf{An arm difference that dissolves under matching.} A fixed-sign
+truth probe collapses to AUROC $\mathbf{0.000}$ on the reward-trained arm while the instructed control holds
+$0.985$--$0.998$ across three seeds, seed-robustly and causally confirmed, which reads as a mechanistic
+difference between deception that was \emph{trained} and deception that was \emph{told}. It is not one: the
+instructed arm is also a worse deceiver and a worse player, and on behaviourally matched pairs the difference
+vanishes on five of six measures, with the sixth running the other way and making the
+\emph{reward-trained} arm the \emph{less} inverted one away from the answer slot. This is a null with tight
+bounds rather than proven equivalence, and it is the evidence behind the matched-control prescription
+(App.~\ref{app:apparent}, Fig.~\ref{fig:crossfam}).
+
+\textbf{What does \emph{not} explain inversion.} Neither lie rate nor per-example confidence predicts it,
+and we tested both. Along a full RL trajectory mid-stack decodability stays pinned at $0.86$--$1.000$ at
+\emph{every} observed checkpoint, including every point at which the final layer has collapsed to $0.000$,
+which rules out the \textbf{strong} form of belief drift, the form that would explain a below-chance probe,
+while leaving weaker versions unadjudicated (App.~\ref{app:negatives}).
+
+\textbf{Decodability is not causal use.} \tm{}
+$= 1.000$ says a linear map recovers the bit, not that the model uses it. Testing both directions
+causally gives a dissociation the identification account predicts: the ally-fit direction is the potent lever
+while the mixed-fit one is largely inert, and on the two arms where neither rate sits on a floor the ally-fit
+direction moves the true-bit-$1$ and true-bit-$0$ rates in \emph{opposition}, which is one token-preference
+knob rather than a truth axis. Identification and causal potency come apart: what the field has been
+steering is largely the action axis wearing a truth label (App.~\ref{app:causal}).
+
+\textbf{Scope of the transfer result.} A probe frozen before it saw the held-out tasks recovers
+an inferred bit at $0.93$--$0.98$ over the deeper half of the stack, and the probe-side alternative is now
+argued structurally and confirmed by measurement. It does \textbf{not} make
+the direction a deployable detector. Freezing is not free and its cost varies eighteenfold across layers ($-0.016$ at
+layer 28 against $-0.285$ at layer 20), so a deployment would have to choose a layer on evidence we have not
+supplied; the arm is instructed rather than reward-trained; its compliant accuracy is $0.74$--$0.79$, so the
+bit is absent on roughly a quarter of trials by construction; and the scope is one model, one family, four
+templates of one task family whose held-out members differ in domain and wording but require the \emph{same} computation, so this is not a test of transfer to a different \emph{kind} of inference. The constructive
+claim therefore remains about identifiability of the measurement, now shown to survive freezing and
+a task shift.
+
+\section{Conclusion}
+
+The field has a striking empirical result (truth probes fail, and fail below chance, against reward-trained deceivers) and has read it as a fact about what deceptive models represent. We think it is mostly a fact
+about how the probes were fit. On compliant data, belief, intent and output are the same label; a probe fit
+there is not identified; and inversion on deceptive data is what the action-aligned solution has to do. The
+identity $\actally = 1 - \ta$ makes this arithmetic rather than interpretive: perfect aliasing, and the
+same quantity is non-degenerate and measurable in the protocol the field actually uses
+(App.~\ref{app:instrpair}).
+
+The constructive half matters more than the critique. Break the collinearity and fit on mixed contexts, and
+the true bit is recoverable at AUROC $1.000$ in the final layer of a model that lies on 100\% of adversarial trials, and at the final layer of 19 of the 21 identification cells we measured. Nothing had to be hidden to produce the
+reported failure: the instrument was pointed at a quantity it could not distinguish from the target, and the
+repair is a change to how the probe is fit, not a new method.
+
+The broader lesson is the one this venue asks for. Both failures here, the unidentified probe and the refit comparison, are invisible to in-distribution validation: every probe we criticize scores $1.000$ on
+held-out compliant data, which is the check a practitioner would run. Where a measurement cannot distinguish
+two mechanisms, agreement with expectation is not evidence.
+
+\section*{Reproducibility statement}
+\label{sec:repro}
+Code for the game, the randomized-codebook variant, the RL recipe, all probe
+fitting regimes, the intervention code and the figure pipeline is released, anonymised for review, together
+with the exact per-run commands for every cell reported here and the consolidated results file the figures
+are rendered from, so every plotted number in this paper is re-derivable without access to a GPU.
+No trained weights or adapters are released. Rerunning the experiments themselves needs one accelerator of
+the class named in \S\ref{sec:setup}; we state the commands rather than ship a hosted pipeline we have not
+ourselves executed end to end. \repolead\ \expandafter\url\expandafter{\repourl}.
+
+
+
+
+\bibliographystyle{plainnat}
+\bibliography{refs}
+
+\appendix
+
+\section{Supporting detail}
+
+\paragraph{Template-aware positions.}
+\label{app:template}
+Raw negative token offsets are not comparable across chat templates: Llama's assistant header is several
+tokens (\texttt{<|start\_header\_id|>assistant<|end\_header\_id|>}) where Gemma's is short
+(\texttt{<start\_of\_turn>model}), so ``position $-3$'' lands in a different \emph{kind} of token in
+different families. Cross-family position claims require template-aware anchoring. It is a second way to
+silently manufacture or hide a cross-family effect.
+
+\paragraph{Depth profiles.}
+\label{app:depth}
+The ally-fit collapse is not monotone in depth: in the Llama-8B codebook cell the probe is \emph{deepest}
+inverted at L24 ($0.003$) and partially recovers by L32 ($0.056$). The layer at which collapse begins also
+differs by family. Both are reasons to plot full per-layer curves (Fig.~\ref{fig:ident}) and not
+a single chosen layer.
+
+\paragraph{The residualization null.}
+\label{app:resid}
+Projecting out the unembedding direction that distinguishes the two answer tokens and refitting moves the
+result by almost nothing: Gemma-9B emergent $0.000 \to 0.000$, Llama-8B instructed $0.998 \to 0.997$. So
+the inversion is not carried by that single direction but lives in a broader action-associated subspace,
+and residualizing is no substitute for the mixed-context fit.
+
+\paragraph{Resampling stability of the ally fit.}
+\label{app:resample}
+Holding model, prompt and activations fixed and varying only the ally subset the probe is fit on, 50 times:
+all three emergent arms and the inverted instructed arm give rival AUROC $0.0000$ with sd $0.0000$, and the
+fitted direction is essentially identical each time (cosine $0.98$--$1.00$). The 8B instructed arm gives
+$0.9866 \pm 0.0155$. We do not generalize zero variance past those four extreme cells: resampling spread at
+intermediate readouts is real ($0.0155$ in one instructed arm, $0.0699$ in another).
+
+\paragraph{The out-of-distribution transfer.}
+\label{app:ood}
+Evaluated on an unseen game structure, the same adapter loses its inversion ($0.000 \to 0.550$) as its own
+deception falls ($1.000 \to 0.559$); the capability floor on that task is $0.900$, so this is not a
+retrieval artifact. Complication: the out-of-distribution points do \emph{not} lie on the in-distribution curve (instructed there reaches deception $0.629 \to$ AUROC $0.139$, where in-distribution $0.735 \to 0.998$), and probe quality is itself degraded (ally in-distribution $0.945/0.959$ versus
+$1.000$). The readout is therefore not a pure function of deception rate across tasks.
+
+\paragraph{The inferred-truth capability floor.}
+\label{app:infer}
+Base models asked for the outcome of a stated comparison answer reliably under the plain rule and much less
+reliably under an inverted one: Qwen2.5-14B $0.979$ (``greater'') vs $0.772$ (``lesser''), Gemma-2-9B
+$0.830$ vs $0.737$, Llama-3.1-8B $0.766$ vs $0.597$. The ordering follows capability, and the failure is rule application rather than the comparison itself: Qwen-14B computes the comparison essentially perfectly. We kept both orientations, because dropping the harder one would let the
+bit be read off operand magnitude alone and defeat the purpose of the task.
+
+\subsection{The direct geometric comparison}
+\label{app:geom}
+
+This is the measurement \S\ref{sec:refit} reports. It asks whether the residual stream at the read position
+actually differs across directive wordings, and not whether a refitted probe's number moves.
+
+\textbf{Design.} Llama-3.1-8B instructed, one read position, the single-bit task, $n{=}400$ episodes per
+rung, over the same 15-rung directive ladder as \S\ref{sec:refit} with the same reference variant
+(\texttt{default}) that the frozen decoder is fit on. The episode stream is paired: the sampler is
+re-seeded to the same value for every rung, so trial $i$ is the same game, values, role and query
+throughout and the only thing differing between two prompts is the directive text. We verified it: under the same seed $200/200$ episodes match on game, values, target, truth, role and
+query, and the check has power, since a \emph{different} seed changes $170/200$. All $15$ rung texts are
+distinct: two rungs sharing a string would produce a trivially zero comparison that
+reads exactly like a null. Every layer comes from one forward pass.
+
+\textbf{Three reference scales, fixed before the run.} (i) A numerical floor: the reference rung collected a second time at a different
+batch size, so the activations are mathematically identical and differ only by \texttt{bf16} reduction
+order. (ii) A within-rung split-half at the same $n$, the floor imposed by $n \ll d$. (iii) The
+between-rung quantities. We report against an imported floor rather than our own, for the reason
+given below.
+
+\begin{table}[h]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lcccccccc}
+\toprule
+layer & 4 & 8 & 12 & 16 & 20 & 24 & 28 & 32 \\
+\midrule
+mean rel.\ $L_2$, ally & 0.075 & 0.098 & 0.184 & 0.235 & 0.200 & 0.186 & 0.185 & 0.240 \\
+mean rel.\ $L_2$, rival & 0.075 & 0.098 & 0.187 & 0.331 & 0.301 & 0.288 & 0.291 & 0.361 \\
+\textbf{excess} (rival $-$ ally) & +0.0001 & $-$0.0000 & +0.003 & \textbf{+0.096} & +0.100 & +0.103 & +0.106 & \textbf{+0.121} \\
+variants with excess $>0$ & 5/14 & 3/14 & 10/14 & \textbf{14/14} & 14/14 & 14/14 & 14/14 & \textbf{14/14} \\
+sign test, $p$ & 0.42 & 0.06 & 0.18 & 1.2e-4 & 1.2e-4 & 1.2e-4 & 1.2e-4 & 1.2e-4 \\
+\bottomrule
+\end{tabular}
+\caption{Geometric difference from the reference variant across depth, both role arms (Fig.~\ref{fig:geom}).
+The excess is a \emph{paired within-rung} comparison over 14 variants, not a correlation.}
+\label{tab:geom}
+\end{table}
+
+\textbf{What the two arms establish} (Tab.~\ref{tab:geom}). Shallow, the arms are indistinguishable and the excess is a clean null, $+0.0001$ at layer 4 with only 5 of 14 variants positive ($p = 0.42$). On ally trials the rival clause
+is present in the text but behaviourally inert, so this says the shallow geometric difference is
+\emph{entirely} the model reading different text. From layer 16 the rival arm carries an excess on
+all 14 variants (sign test $p = 1.2\times10^{-4}$), and it survives deleting the most extreme
+variant (mean excess $+0.098$ at layer 32 excluding \texttt{hint}), so a role-dependent component appears
+mid-stack. The difference is also largely a rigid translation shallow and trial-specific deep: the ratio of
+the paired distance to the distance between the two rungs' \emph{means} rises from $1.06$ at layer 4 to
+$1.24$ at layer 32. Centred kernel alignment tells the same story against its own row-aligned floor of
+$1.000$: it sits at $0.983$--$0.999$ through layer 8 and falls to $0.568$--$0.969$ by layer 28, so the deep
+difference is not a rescaling of an otherwise-shared geometry.
+
+\textbf{The length confound, and the pre-registered control for it.} Directive length spans $159$ to $392$
+characters ($2.47\times$), so the read position sits at a different absolute index after different context
+and part of any raw paired distance is guaranteed by the manipulation itself. The defensible claim
+is therefore only about activations at the read position under different prompts, which is the object \S\ref{sec:refit} is about, and not that the model ``represents the task differently''. Two things
+discipline this. The ally arm, above. And length-matched pairs, selected on length alone before any
+geometry was computed: \texttt{hint}/\texttt{p\_withhold} (exactly matched at 178 characters) differ by
+$0.003$ at layer 4 and $0.316$ at layer 32. In that pair the behaviour and the refit numbers diverge as
+sharply as the deep geometry does: the two sit at
+rival deception $0.029$ and $\mathbf{0.862}$, refitting reads them at $1.000$ and $\mathbf{0.471}$, and the
+frozen direction reads them at $1.000$ and $\mathbf{0.989}$. Continuing the matched set: \texttt{p\_neg\_emph}/\texttt{p\_map\_firm} ($\Delta 2$) by
+$0.038 \to 0.347$; \texttt{max\_filler}/\texttt{max\_nonneg} ($\Delta 3$) by $0.101 \to 0.205$. So the
+shallow differences are length and the deep differences are content at matched length. Character length is
+a proxy for token length, so these are matched to within about a token, not identically.
+
+\textbf{Three limits: an anomalous floor, a correlation resting on one point, and a reference
+that does not apply.} First, our own numerical floor is
+anomalous and we do not quote it: it came out at $0.0000$ paired relative $L_2$ (CKA $0.9999999$) at every
+layer, whereas the same batch-size comparison measured $1.211\times10^{-2}$ on Gemma-2-9B, a $\geq
+240\times$ discrepancy that we have not explained; the second pass did run at the smaller batch and the
+model is \texttt{bf16}. Every number above is therefore stated against the \emph{imported} Gemma floor, and
+against it the weakest rung (\texttt{soft} at layer 4, $0.027$) is only $2.20\times$ floor and is
+\textbf{not} comfortably resolved. Second, we make no claim that the deep excess tracks behavioural
+magnitude: that correlation is $+0.733$ over 14 rungs but rests on a single point, falling to $+0.185$
+(95\% CI $[-0.41, +0.67]$) when \texttt{hint} is removed. The across-rung correlation between the arms
+behaves the same way and is reported for completeness only: it falls from $1.000$ shallow to $0.696$ at layer 32, but excluding \texttt{hint} that becomes $0.838$, and Spearman gives $0.802$. Third, the
+within-rung split-half is not a valid reference for the alignment-dependent statistics: CKA and
+the paired distance compare geometry over a common set of inputs and so need row-aligned matrices, whereas
+the two halves are different episodes.
+
+\textbf{Scope.} One model, one arm, one read position, one task, $n{=}400$ per rung. This bounds
+\S\ref{sec:refit}'s claim; it says nothing about representational identity in general.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{fig_geom.png}
+\caption{\textbf{The geometry is text shallow and role-dependent deep.} Left: mean paired relative
+$L_2$ from the reference variant across depth, rival arm (solid) against ally arm (dashed), with the
+imported numerical floor. The arms coincide through layer 12 and separate from layer 16. Centre:
+the per-variant excess (rival $-$ ally); every one of the 14 variants is positive from layer 16 on, and the
+shallow layers are a clean null (5 of 14 positive at layer 4). Right: the length-matched pair
+\texttt{hint} versus \texttt{p\_withhold}, identical at 178 characters, which sit $0.003$ apart at layer 4
+and $0.316$ apart at layer 32, so the deep separation is not length. Llama-3.1-8B instructed,
+$n{=}400$ paired episodes per variant.}
+\label{fig:geom}
+\end{figure}
+
+\subsection{Assets and licenses}
+\label{app:licenses}
+
+All experiments use publicly released base-model weights, whose licenses are not uniform, so we
+name each. Mistral-7B-v0.3 and Qwen2.5-\{7,14,32\}B are released under the
+Apache License 2.0. Llama-3.1-8B is released under the Llama 3.1 Community License
+Agreement (\copyright~Meta Platforms, Inc.), whose acceptable-use policy is incorporated by reference.
+Gemma-2-9B is released under the Gemma Terms of Use with its Prohibited Use Policy: the Gemma \emph{code} is Apache-2.0, but the weights are not.
+Qwen2.5-3B is the exception within its own family: Qwen licenses the 3B and 72B variants under the
+Qwen Research License rather than Apache-2.0, so it is the one model here restricted to
+non-commercial use. Every use in this paper is non-commercial research, which all four terms permit.
+Supporting software: \texttt{transformers} and \texttt{PyTorch} (BSD-3-Clause), \texttt{scikit-learn}
+(BSD-3-Clause), \texttt{numpy} (BSD-3-Clause) and \texttt{matplotlib} (PSF-based license).
+
+Two obligations attach to distributed \emph{weights} rather than to experiments, and they are easy to
+miss: the Llama 3.1 license requires that a model fine-tuned from Llama Materials carry
+\texttt{Llama} at the start of its name and display ``Built with Llama'', and both the Llama and Gemma terms
+require the accompanying notice and use policy to be passed downstream. We release code but no
+weights or adapters, so neither obligation binds this release; anyone redistributing an adapter trained
+with this code incurs both.
+
+\section{The reward basin and its correction}
+\label{app:basin}
+
+This is the material \S\ref{sec:limits} summarises.
+
+\textbf{Saturation on the wholly unmodified recipe: one family of four attempted.} Decorrelating
+the emitted token from the semantic action makes the \emph{role-conditional} policy substantially harder to
+learn, and our reward table gives role-insensitive policies well-separated payoffs: at a
+50/50 role mix, always-truthful earns $-0.50$, always-deceptive earns $\mathbf{+0.25}$, and only the
+conditional policy earns $+1.25$. Three of four families never reached the conditional solution, and the
+three failed in \emph{different} ways. Qwen-14B held ally truth $1.000$ with rival deception ${\approx}0$ and
+reward pinned at exactly $-0.50$ for 340 epochs, then fell into the always-deceptive basin: rival
+deception $1.000$ purchased by destroying the compliant branch (ally truth $0.000$--$0.500$), so it is not a
+conditional deceiver and we did not probe it. Llama-8B and Mistral-7B landed somewhere we did not anticipate
+and initially mis-described: they keep a perfect compliant branch ($1.000$) but emit a
+single constant answer to rivals, which scores ${\approx}0.5$ deception purely because the secret bit
+is balanced (\S\ref{sec:constructive}). That is a third basin, not the always-truthful one.
+
+\textbf{Correcting the payoff asymmetry.} Replacing the table with a symmetric one ($+1$ for the role-appropriate answer, $-2$ otherwise, regardless of role, so always-deceptive earns $-0.50$ and is no longer positively rewarded) brings Qwen2.5-14B to deception $0.996$ with ally
+truth $0.994$, a conditional policy on both branches, with the identification result unchanged
+(\S\ref{sec:constructive}). This has three practical consequences. First, an asymmetric adversarial payoff
+makes unconditional deception \emph{positively} rewarded and therefore an attractor whenever the conditional solution is out of reach, a reward-design hazard worth flagging independently of probing. Second, anyone replicating our headline cell should expect the training half to be the
+hard part, and should verify \textbf{both} branches before probing: an arm at rival deception $1.000$ with a
+broken compliant branch looks saturated on the headline metric while violating the premise that makes an
+ally-fit probe meaningful at all. Third, and symmetrically, an arm near deception $0.5$ may not be a partial deceiver at all: check the rate against the ground-truth bit before calling it one.
+
+\section{The design rule and its feasibility floor}
+\label{app:designrule}
+
+The instruction-pair protocol carries a feasibility floor as well as an aliasing rate
+(App.~\ref{app:instrpair}). The identifying signal lives entirely in the minority side of whichever
+split is intended, so write $p$ for the fraction of adversarial trials that side consumes. With a
+minimum viable subset size $n_{\min}$ and $N_{\mathrm{adv}}$ adversarial evaluation trials, the split
+needs $\min(p, 1-p)\cdot N_{\mathrm{adv}} \geq n_{\min}$, so for the usual regime $p > 0.5$,
+\begin{equation}
+N_{\mathrm{adv}} \;\geq\; n_{\min} / (1 - p).
+\label{eq:designrule}
+\end{equation}
+Which rate plays the role of $p$ is fixed by the split, and mistaking one for the other is the easiest
+way to misapply the rule. For an \emph{agreement} split over both matched rungs, $p = \gamma$: at
+$n_{\min} = 25$ the floor is 100 trials at $\gamma = 0.75$, 500 at $0.95$, 2500 at $0.99$, and
+unattainable at any $N$ when $\gamma = 1$. For a \emph{compliance} split, which can use only the
+disobedient trials of the deceptive rung, $p = d_{\mathrm{deceptive}}$, and the pooled $\gamma$ is the
+wrong quantity because it also counts honest-rung disagreements the split cannot touch.
+App.~\ref{app:objections} reports a family where $\gamma = 0.985$ while
+$d_{\mathrm{deceptive}} = 1.000$, so the floor is finite in $\gamma$ and unattainable in the rate that
+actually governs. This is a screen, not a power calculation: the
+realized disagreement count is random, and clearing the floor guarantees neither class balance within the
+subset nor power for an AUROC contrast. Its value showed up early (a compliance split with no minimum size produced a striking number computed on ${\sim}8$ trials), and it correctly predicted that
+our own $N{=}300$ split was infeasible. One refinement that matters:
+the governing rate must be measured on the \emph{same subset} you intend to split, not pooled. Our pooled $\gamma$
+under-predicted the disobedient count in the held-out cell by $47\%$, because the held-out wordings drew more
+disobedience than average.
+
+
+
+\section{The instruction-pair protocol}
+\label{app:instrpair}
+
+\begin{table}[t]
+\centering
+\caption{The aliasing rate under the instruction-pair protocol, measured on our task. $\gamma$ is
+$P(c_{\mathrm{dir}} = c_{\mathrm{lie}})$ on adversarial trials; $1$ means the two candidate targets are one
+label vector and no in-distribution check can prefer either. \emph{Lying rates are shown to the precision that
+reproduces the $\gamma$ column; the top rows are rounded to three decimals, so recomputing
+Eq.~\ref{eq:gamma} from those digits can differ from the reported $\gamma$ in the fourth decimal. The
+agreement asserted in code is between the measured $\gamma$ and the closed form on unrounded rates, to within
+$10^{-9}$.}}
+\label{tab:gamma}
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lccc}
+\toprule
+arm and instruction rung & $d_{\mathrm{honest}} \to d_{\mathrm{deceptive}}$ & Eq.~\ref{eq:gamma} & measured \\
+\midrule
+Gemma-9B, default rung & $0.000 \to 1.000$ & 1.0000 & \textbf{1.0000} \\
+Qwen-14B, default rung & $0.000 \to 1.000$ & 1.0000 & \textbf{1.0000} \\
+Gemma-9B, softened rung & $0.000 \to 0.890$ & 0.9450 & \textbf{0.9451} \\
+Llama-8B, default rung & $0.118 \to 0.688$ & 0.7850 & \textbf{0.7848} \\
+Qwen-14B, hint rung & $0.000 \to 0.553$ & 0.7765 & \textbf{0.7764} \\
+Gemma-9B, hint rung & $0.000 \to 0.038$ & 0.5190 & \textbf{0.5190} \\
+\midrule
+\textbf{Gemma-9B, 5-wording bank} & $\mathbf{0.1211 \to 0.8503}$ & \textbf{0.8646} & \textbf{0.8646} \\
+\textbf{Gemma-9B, 5-wording bank, $N{=}1000$} & $\mathbf{0.1113 \to 0.8669}$ & \textbf{0.8778} & \textbf{0.8778} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{The aliasing rate, in closed form}
+
+The two candidate targets are $c_{\mathrm{dir}}$ (``the deceptive instruction is present'') and
+$c_{\mathrm{lie}}$ (``the model is lying''). Unlike our ally case these are not identical in general, so the
+relevant object is the rate at which they agree. In a matched two-rung design, where every episode
+is rendered once under each instruction so the halves are exactly equal, restricted to the
+adversarial subset where the deceptive instruction actually requests a lie:
+\begin{equation}
+\gamma(c_{\mathrm{dir}}, c_{\mathrm{lie}}) \;=\; \tfrac{1}{2}\bigl[\,(1 - d_{\mathrm{honest}}) \;+\; d_{\mathrm{deceptive}}\,\bigr],
+\label{eq:gamma}
+\end{equation}
+where $d_r$ is the model's lying rate under rung $r$ on that subset. The proof is one line: under the honest
+rung the labels agree exactly when the model does not lie, rate $1 - d_{\mathrm{honest}}$; under the
+deceptive rung they agree exactly when it does, rate $d_{\mathrm{deceptive}}$; the matched design weights the
+halves equally.\footnote{Three conditions, all met here and none automatic: the emitted answer is binary (no
+abstain state), the restriction is to adversarial trials only, and there are exactly two rungs. With unequal
+halves the general form is $\gamma = w_h(1-d_{\mathrm{honest}}) + w_d\,d_{\mathrm{deceptive}}$.}
+
+\textbf{What Eq.~\ref{eq:gamma} needs.} No probe and no activations. Two behavioural
+rates, both of which a paper could report, determine how much of the probe's target is the instruction rather
+than the lie. We release the audit as a 40-line function. Across seven rungs spanning three families our
+measured $\gamma$ matches Eq.~\ref{eq:gamma} to floating-point tolerance, and the code asserts the agreement
+instead of reporting it, because a mismatch would be a bug in one of the two computations and never noise.
+Run faithfully on two families, the construction reads the directive at ${\approx}1.000$ while truth stays at
+chance, and the identification split is unavailable \emph{by construction} (Fig.~\ref{fig:instrpair}).
+
+% Declared HERE, not in the supplementary-figures section, because floats only move FORWARD.
+% It was printing on p35 while its only reference is on p14. Re-check figure pages in main.aux
+% after touching this, and keep the \clearpage before \input{checklist.tex}.
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{fig_instrpair.png}
+\caption{\textbf{The field's instruction-pair protocol, run faithfully, beside the forced identity.} Left and
+centre: under the standard construction the probe reads the \emph{directive} at ${\approx}1.000$ at every
+depth in both families, while \emph{truth} sits at chance, and the identification split that would tell the two apart is unavailable \emph{by construction}, because \texttt{is\_lying} has only one class. Right:
+on ally data the action and truth AUROCs lie exactly on $action = 1 - truth$ across all 751 (cell, layer)
+pairs in our identification set, maximum deviation $2.2\times10^{-16}$, an algebraic consequence of the labels coinciding, not an empirical finding.}
+\label{fig:instrpair}
+\end{figure}
+
+\subsection{Applied to published protocols}
+
+Table~\ref{tab:gamma} gives the rates. $\gamma = 1.000$ is not a discovery about a probe; it is the
+statement ``this model obeys both instructions'', and it would hold in a setup containing no probes at all.
+It is also the point at which this appendix and \S\ref{sec:ident} coincide: the perfect aliasing that makes
+the conventional probe unidentified is this rate's $\gamma = 1$ limit, so the two are one argument evaluated
+at two rates rather than two findings that happen to agree.
+The protocol is informative only strictly between the endpoints, and only if the rates are published.
+
+
+
+\textbf{Two of the four closest protocols, in their own words.} These make the identification question
+unaskable by construction, and the two candidate readings of what their probe targets land at
+\emph{opposite} extremes. Both force the response instead of
+sampling it: \citet{goldowskydill2025} insert ``a random true fact\ldots as the model's response'', noting
+these ``are not written by the model and contain no actual deception'', and \citet{oneprobe2026} state the
+response is ``token-forced (off-policy)'' with a classifier ``trained to predict whether the honest or
+dishonest prompt was used''.
+
+Under the \emph{intent} reading, where the target is ``this prompt asked for a lie'', forcing makes that label \emph{definitionally identical} to the instruction, so $\gamma_{\mathrm{intent}} = 1$ trivially and no
+in-distribution check can distinguish the two. Under the \emph{content} reading, where the target is ``what was said is false'', \citet{oneprobe2026} admits an exact result, because the \emph{same} factual statement
+appears in both arms: response falsity is held fixed across the pair, so
+$d_{\mathrm{honest}} = d_{\mathrm{deceptive}} = f$ and
+$\gamma_{\mathrm{content}} = \tfrac{1}{2}[(1-f) + f] = 0.500$ \emph{exactly, for every $f$}: the instruction label is orthogonal to content falsity by design, as they say it is. Both endpoints are
+useless: at $\gamma = 1$ the instruction label \emph{is} the lying label; at
+$\gamma = 0.5$ it is unrelated to what was said. Neither leaves a target that is partly about lying.
+The two are easy to conflate: forcing does not
+make content falsity identical to the instruction, and quoting a bare ``$\gamma = 1$'' for these protocols
+would assert exactly that.
+
+\textbf{The two rates, as published.} Not one of the four publishes them. Two make the question moot by
+construction; one does not use the protocol; and the one design that could have reported them class-balances
+and discards them.
+
+Three of the four state our mechanism qualitatively: \citet{goldowskydill2025} that the probe ``partially depends on `is the scenario deception related'\,\ldots
+instead of only on `is the response itself actually deceptive'\,''; \citet{oneprobe2026} that ``the
+fundamental direction being distinguished may not be directly related to strategic deception''. Our delta is
+not the observation. It is the closed form, the diagnostic, and the design that breaks the aliasing.
+
+\subsection{Running the field's construction on our task}
+
+We implement the protocol on our own game, including a faithful variant that closes all three deviations we
+would otherwise have to disclose: response-token mean-pooling excluding the last five tokens, token-forced
+responses, and a bank of five matched instruction wordings. We do not claim to reproduce any published result: we use none of their models, datasets, instruction banks or evaluation sets. The claim is about
+what the \emph{protocol} inherits.
+
+\textbf{The identification test under the faithful construction.} It is unavailable at every $N$, on both
+families we ran. Because the inserted response names no value, it misstates nothing: $c_{\mathrm{lie}}$ is the
+constant zero, so there is no lying anywhere in the sample for the instruction to be aliased \emph{with}, the
+$c_{\mathrm{lie}}$ AUROC is undefined, and no sample size, model or arm makes the split available. Meanwhile
+the probe reads $c_{\mathrm{dir}}$ at $\mathbf{1.000}$. The protocol reports success by its own
+criterion while carrying provably zero information about actual lying. We flag one trap for anyone repeating
+this: the measured $\gamma$ is exactly $0.500$ here, and $0.500$ elsewhere in this paper means ``decorrelated,
+probe identified''. Under forcing it means the opposite kind of thing: it is simply what a constant scores,
+since half the adversarial rows carry $c_{\mathrm{dir}} = 0$ and match a constant zero for free. It must never
+be quoted without the number of $c_{\mathrm{lie}}$ classes beside it.
+
+\textbf{Aliasing, high but wording-dependent.} With one canonical
+instruction pair and an obedient arm, $\gamma = 1.000$. Averaged over five matched wordings on the same model
+and task it is $\mathbf{0.865}$ ($\mathbf{0.878}$ at $N{=}1000$): the two candidate label vectors are
+${\sim}87\%$ identical, not $100\%$, so no single number should be quoted. Here Eq.~\ref{eq:gamma} predicts a non-trivial value exactly.
+
+
+
+\section{Related work, case by case}
+\label{app:related}
+
+This is the material \S\ref{sec:related} summarises.
+
+
+\textbf{The umbrella claim, which we do not contest.} That reward-trained deception can
+degrade passive probes is established \citep{obfuscationatlas2026,rlobfuscation2025}, as is probe
+fragility as a training-distribution artifact \citep{pressuretesting2026} and the dominance of prompt
+choice in probe performance \citep{oneprobe2026}. Sub-chance probe AUROC has been reported independently by
+two groups ($0.376$ and $0.374$); the spread behind the first is stated in the introduction.
+Our contribution is the diagnosis, not the sighting.
+
+\textbf{Three results that have looked contradictory.} All three are consistent with the identification
+account, a claim about their \emph{form}, not a reproduction; we have not re-run these setups
+(\S\ref{sec:limits}). \citet{goldowskydill2025} report instruction-pair probes transferring at AUROC
+${>}0.96$, long read as contradicting the inversion literature. Under our account it is a
+confirming instance: an ally-fit probe becomes indistinguishable from an action probe only once
+the policy reliably makes $\texttt{action} = \neg\texttt{truth}$, and their liars were not saturated.
+Our within-model pair brackets that relation, one arm at $\texttt{action} = \neg\texttt{truth}$ throughout and one with action independent of truth (\S\ref{sec:constructive}), but neither arm is an unsaturated \emph{conditional} liar of the kind they
+study, so the pair supports the argument's endpoints rather than reproducing their regime.
+\citet{obfuscationatlas2026} report off-domain AUC $0.991 \pm 0.009 \to 0.376 \pm 0.261$ after RLVR with
+\emph{no} detector penalty. Their account is representation drift, their term, alongside a behavioural measurement: the rate at which the model endorses hardcoding as acceptable rises from
+10--40\% to 45--65\%, which they read as the model genuinely no longer considering hardcoding deceptive.
+That is weaker than the claim that the truth ceases to be \emph{represented}, which they do not
+assert. In our setting that stronger form is ruled out by the checkpoint-wise
+suppression result (App.~\ref{app:negatives}); and a below-chance number does not \emph{require} either
+mechanism, because their probe was fit where truth and action were collinear too. We claim an alternative
+explanation is available, not that theirs is wrong in their setting. \citet{oneprobe2026} report both fingerprints we diagnose (a below-chance $0.374$, and prompt choice explaining $70.6\%$ of variance) and frame the first as performance headroom. Their positive conclusion is that instruction-pair probes capture
+intent rather than content; under \S\ref{sec:ident} that is precisely the solution an unidentified
+ally-fit probe is expected to converge to, so their interpretation and their sub-chance AUROC are the same
+fact stated twice. \citet{offpolicyprobes2026} independently find the largest generalisation failures for
+behaviours defined by response intent.
+
+\textbf{On probing at the answer position.} \citet{oneprobe2026} deliberately exclude the last few response
+tokens when pooling activations, to stop the probe reading truth off the output. Our probe sits \emph{at}
+the answer-prediction position, which invites the objection that our inversion is output-token leakage the
+field already knows to avoid. Three responses. (i) \tm{} $= 1.000$ on
+those same activations at that same position, so the position plainly carries the truth. (ii) We
+decorrelate the token by construction rather than by truncation, and fit \texttt{token} as its own label set: the fitted truth and token directions are near-orthogonal in every cell
+($\cos = +0.003$ to $-0.046$; \S\ref{sec:setup}). (iii) Dropping those tokens removes \emph{truth\,$\leftrightarrow$\,token} while
+leaving \emph{truth\,$\leftrightarrow$\,intended action} untouched, and intent is upstream of them, so it is exactly the leg that survives. Probing at the output-adjacent position is also the
+point: it is where deployed monitors read and where the inversion literature reports its numbers.
+
+\textbf{Adjacent and converging.} \citet{contextshapestruth2026} characterize context as applying a
+rotation-plus-scaling to the truth direction rather than destroying it, a geometric statement of why a probe fit under the wrong context distribution fails while the information remains present.
+\citet{strategicdishonesty2025} flag instructed, off-policy probe evaluation as the untested case;
+\citet{rift2026} and \citet{liedetectorlimits2026} document adjacent failure modes; and
+\citet{geometryoftruth2024} established the linear truth-direction structure these methods rest on.
+
+
+
+\section{The apparent finding, and the control that dissolves it}
+\label{app:apparent}
+
+This is the matched-control result \S\ref{sec:limits} summarises.
+
+On the Llama-3.1-8B anchor, a fixed-sign truth probe at the answer-prediction position collapses to AUROC
+$\mathbf{0.000}$ on the reward-trained arm while the instructed control holds at $0.985$--$0.998$ across
+three seeds. The effect was seed-robust, localized to that position (intact at $-3$, inverted at $-1$),
+and \emph{causally} confirmed: patching the ally-context residual into a rival-context forward pass at
+mid-stack flipped the trained liar's answer on $0.99$--$1.00$ of trials versus $0.575$--$0.61$ for the
+instructed arm. Read at face value this is a mechanistic difference between deception that was
+\emph{trained} and deception that was \emph{told}, on exactly the axis safety cares about.
+
+\textbf{It is not.} The instructed arm lies on only $0.735$ of rival trials and answers correctly on just $0.902$ of \emph{ally} trials: a worse deceiver and a worse player. Build behaviourally matched pairs
+(both arms at ally truth $1.000$ and rival deception $1.000$, available in Gemma-2-9B and Qwen2.5-14B) and
+the difference vanishes on five of six measures: the answer-position readout (both $\mathbf{0.000}$, an
+exact tie in all 8 matched cells); patch magnitude
+($1.000/0.955$ and $0.960/0.960$); patch transition depth and shape (same window, same sharpness);
+ablation of the truth direction ($1.000/1.000$, null in both); and a steering $\alpha$-sweep at
+$5/10/20/40$ ($0.000/0.000$, null in both). The sixth does not vanish, and it runs against the
+hypothesis. On the off-position ($-3$) readout the matched difference is consistently \emph{positive} (8 of 8 cells, mean $+0.12$, 95\% CI $[+0.055, +0.190]$), meaning the \emph{reward-trained} arm is the \emph{less} inverted one away from the answer slot, the opposite sign to an
+account in which training hides the truth. Its absolute level is also wildly family-dependent (both arms sit
+near $0.00$ in Gemma-9B and near $0.90$ in Qwen-14B/32B), so it is not a stable quantity to compare across
+families in the first place.
+
+The unmatched instructed arm's roughly-chance patch response and non-saturating ramp
+(asymptoting at ${\approx}0.72$) are confounded with its lower behavioural reliability rather than
+evidence of a distributed representation; we did not measure an intervention-specific ceiling, so we rest
+the argument on the matched arms, which simply do not reproduce the difference. And at the one layer where
+the matched Gemma arms differ at all the \emph{instructed} arm is ahead ($0.355$ vs $0.100$ at L25), the opposite sign to the hypothesis. Across a 7-family $\times$ 2-arm $\times$ 3-seed grid at $N{=}1000$, all
+21 emergent grid cells are identical to four decimals (deception $1.000$, AUROC $0.000$, cross-seed sd
+$\mathbf{0}$), and instructed arms invert too, sometimes \emph{more} (Gemma-9B instructed $0.015$ versus
+its emergent counterpart $0.165$). We state this as a null with tight bounds, not proven equivalence
+(Fig.~\ref{fig:crossfam}). So what \emph{does} predict inversion? We tried lie rate, then per-example confidence, and refuted both
+(App.~\ref{app:negatives}). The question was ill-posed: the quantity being predicted was never a property of
+the model's representation.
+
+
+
+\section{The honest negatives}
+\label{app:negatives}
+
+These are the honest negatives \S\ref{sec:limits} summarises.
+
+
+We were wrong twice, and the negatives constrain \S\ref{sec:ident}.
+
+\textbf{Neither lie rate nor per-example confidence}: our own successive hypotheses (Fig.~\ref{fig:predictors}). Mistral-7B instructed reaches rival deception of exactly $1.000$ and does
+\textbf{not} invert (AUROC $0.970$), while other arms at $1.000$ sit at $0.000$; a rate-based account
+predicts the opposite. Mistral also has \emph{lower} rival entropy ($0.252$) than the Llama-8B variant
+that does invert ($0.283$), so it is the more deterministic of the two and the one that stays at $0.970$.
+Within a single model the ordering fails too: entropy falls monotonically across a directive ladder
+($0.490$, $0.468$, $0.324$, $0.305$, $0.283$) while AUROC goes $1.000$, $0.790$, $0.998$, $1.000$,
+$0.080$. Entropy does not order the data, and the ladder confounds directive \emph{text} with resulting
+behaviour, so it could not have settled the question either way.
+
+\textbf{Suppression, not loss of the representation.} Along a full RL trajectory (41 checkpoints for seed 0 and 36 each for seeds 1 and 2, the latter two evicted before the flat post-collapse tail), mid-stack decodability stays pinned at $0.86$--$1.000$ at \emph{every} observed checkpoint, including every
+point at which the final layer has collapsed to $0.000$; in seed 0 it reads $1.000$ at all 41
+(Fig.~\ref{fig:suppress}). Training never removes the linear signal mid-stack; only the answer-prediction
+readout flips. This rules out the strong form of what we will call \emph{belief drift}, that the information stops being represented, which is the form that would explain a below-chance probe.
+The strong form is our own formulation, not a claim we attribute to others: the nearest account in the literature
+\citep{obfuscationatlas2026} claims representation drift together with a measured shift in how the model
+evaluates the behaviour, \emph{not} the absence of a linear representation. Our result does not adjudicate
+weaker versions in which the information is retained but no longer operative.
+
+\textbf{A cliff, with seed-dependent onset and width.} AUROC is pinned at $1.000$
+across measured deception from $0.03$ up to at least $0.90$ in all three seeds: a model that lies to rivals on 53\% of trials reads $1.000$, perfectly truthful. But it is not a fixed threshold and
+not uniformly abrupt: seed 0 begins degrading at $0.938$ and passes through $0.959 \to 0.828$ and
+$0.964 \to 0.372$ before reaching $0.000$, roughly six percentage points, whereas seeds 1 and 2 hold
+$1.000$ through $0.981$ and $0.984$ and collapse within one to two. We report per-seed onsets ($0.938$,
+$0.986$, $0.990$) instead of a pooled curve, and treat the variation as further evidence that aggregate
+rate is the wrong independent variable. Out of distribution on an unseen
+game structure the \emph{same adapter} loses its inversion ($0.000 \to 0.550$) exactly when its own deception falls ($1.000 \to 0.559$), though the out-of-distribution points do not lie on the
+in-distribution curve, so the readout is \textbf{not} a pure function of deception rate across tasks and we
+do not draw it as one (App.~\ref{app:ood}).
+
+\textbf{Report spread, not point estimates.} The readouts carrying the App.~\ref{app:apparent} null sit at extremes where the measurement is exact: all 21 saturated emergent grid cells give cross-seed sd
+$\mathbf{0}$, the four inverted cells 50-resample sd $\mathbf{0.0000}$. The interpretive middle is softer:
+our worst cell reads $0.205 / 0.479 / 0.531$ across three episode seeds with a 50-resample bootstrap of $\mathbf{0.539 \pm 0.070}$, approximately chance, and \emph{not} the inverted cell any one of those
+point estimates would suggest. This is structural: at AUROC $0.000$ or $1.000$ the classes are perfectly
+separated so any subsample reproduces the ordering, whereas intermediate values carry genuine sampling
+variance. Intermediate cells should be reported with spread or a CI, by us and by others.
+
+
+
+\section{The constructive result: further detail}
+\label{app:constructive}
+
+This is the material \S\ref{sec:constructive} summarises.
+
+\textbf{Per-seed collapse profiles for row~\ref{row:gemma-unmod}.} In the representative seed the ally-fit probe begins
+collapsing at layer 26 ($0.354$), is at $0.008$ by layer 27, and sits at $\mathbf{0.000}$ from layer 29
+through layer 42 of 42; the other two seeds reproduce the profile, intact through layer 16 and
+degrading at layer 24 ($0.866$, $0.853$).
+
+\textbf{What the second arm actually is.} Reading the deception rate alone invites the description ``the same run, less far
+along''. It is not. Breaking that arm's rival behaviour down \emph{by the true bit}, which we did only when a later causal run printed the split, shows it answers truthfully on $\mathbf{0.000}$ of true-bit-$0$
+rival trials and $\mathbf{1.000}$ of true-bit-$1$ ones: it emits a constant semantic answer to
+rivals, while still answering allies truthfully at $1.000$. Its ``deception rate'' is therefore
+$P(\texttt{truth} \neq \text{that constant}) \approx 0.5$ \emph{by arithmetic}, on any draw. The Mistral-7B
+row (row~\ref{row:mistral-const}) is the mirror image, constant at the other value.
+
+\textbf{Why a constant branch sharpens the contrast.} Our account says inversion
+requires $\texttt{action} = \neg\texttt{truth}$ on the evaluation trials, and a constant rival branch is the \emph{maximal} break of that relation, since action is independent of truth, so an ally-fit probe should read truth well there, which is what $0.815$ and $0.969$ are. The two arms bracket the action--truth
+relation: row~\ref{row:llama-const} is not a less
+reliable liar, but a policy whose rival action is independent of the truth. \emph{One consequence:} this pair therefore does not
+illustrate the unsaturated-conditional-liar regime that \citet{goldowskydill2025} occupy, so our
+reconciliation with them (\S\ref{sec:related}) rests on the argument and on the instructed-arm ladder, not on
+this pair.
+
+\textbf{What the fixed-symbol guard misses.} We
+verify the policy is not degenerate with the fixed-symbol statistic of \S\ref{sec:setup}, and both arms pass it ($0.516$ and $0.484$, both ${\approx}0.5$), for exactly the reason flagged when we
+introduced the statistic: it rules out a fixed surface character and is blind to a fixed meaning.
+The cheap fix is to report the
+deception rate split by the true bit: a conditional deceiver has both components away from the extremes,
+a constant-output policy reads $0.000/1.000$. An aggregate rate near
+$0.5$ is exactly what a degenerate policy produces, and it reads as healthy graded behaviour.
+
+Row~\ref{row:mistral-const} also carries a result independent of all this: its \texttt{token/mixed} climbs
+to $0.975$ at the final layer while \tm{} stays at $1.000$, which shows that truth and the surface symbol coexist \emph{separably} in the final residual stream, against the reading that late
+layers are ``just the output token''.
+
+\textbf{Why only one family reached the full conjunction.} Row~\ref{row:gemma-unmod}, the only cell combining reward training, deception $1.000$, training on the
+identification task \emph{and} a wholly unmodified recipe, holds in one family, across three seeds.
+That precise conjunction is still one family and we do not claim otherwise.
+
+But the reason the others failed is not probe-related, and it was actionable: our reward table makes
+unconditional deception an attractor whenever the conditional solution is out of reach, which is why three
+of four families never learned one, and correcting that single design flaw rescues one of them
+(\S\ref{sec:limits} gives the table and the arithmetic). Under the corrected table
+Qwen2.5-14B reaches rival deception $0.996$ with ally truth $0.994$, a genuinely role-conditional policy on both branches, and shows exactly the pattern of the headline cell:
+\ta{} collapses from $1.000$ at layer 24 to $\mathbf{0.000}$ at layer 40 and $\mathbf{0.023}$ at
+layer 48 of 48, while \tm{} reads $\mathbf{1.000}$ at every layer measured.
+
+\textbf{Why this is more than an extra row.} First, the same corrected table run on Gemma-9B
+reproduces its original-table result exactly ($\ta{} = 0.000$, $\tm{} = 1.000$), so the
+identification phenomenon is invariant to the reward table: the change alters what is \emph{learnable}, not what the probe reads, and the new cell is therefore comparable to the
+others. Second, the rescue was derived from our own basin analysis rather than found by search, so the
+limitation comes with a mechanism \emph{and} a demonstrated fix. The saturated set now spans three
+architectures (Gemma-2-9B, Llama-3.1-8B, Qwen2.5-14B) and four recipes, and the deepest of them is
+a 48-layer stack. The constructive result never depended on this anyway: \tm{} $= 1.000$ holds in 19 of the
+21 identification cells including the instructed arms.
+
+\section{The inferred-truth task, settling and ingredient controls}
+\label{app:settling}
+
+This is the material \S\ref{sec:limits} summarises.
+
+\textbf{Partial evidence, at one cell, that the direction is not reading a copied token.} We ran one probe
+against this limitation. In an \emph{inferred-truth} variant of the codebook task the secret bit is never a
+token in the prompt: it is the outcome of a stated comparison between two quantities (operands separated
+by at least 31, never 0 or 1, both rule orientations, so the bit cannot be read off operand magnitude
+alone). On a Gemma-2-9B instructed arm at rival deception $0.545$, the mixed-fit probe reads truth AUROC
+$\mathbf{1.000}$ at layers 24, 32, 40 and 42 of 42. The depth profile is itself the evidence
+(Fig.~\ref{fig:depthstep}): a bit the prompt \emph{states} is readable by layer 4, whereas this one sits at
+chance through layer 16 and only then rises; a copied token would not behave that way. Alongside this the
+fixed-symbol guard sits at ${\approx}0.5$; the
+ally-fit probe never inverts ($0.374$--$0.551$), as an unsaturated policy should not, and the forced
+identity holds at all seven sampled layers. The probe recovers the bit at $1.000$ while the arm itself
+answers correctly on only $0.733$ of compliant trials, so the bit is linearly present even on trials the
+model gets wrong. We report this as \emph{bounding} rather than settling the limitation, and it is two
+removes from a headline: the arm is instructed, and its compliant accuracy is $0.733$. A third concern, that a linear map over activations encoding both operands could in principle perform the comparison \emph{probe-side}, is the substantive one, and we take it up
+below: for the mixed-orientation fit the task's own construction makes that map unavailable, and we
+measure that its ingredients are linearly present while the bit is not. So this
+cell rules out a copied token, and whether the policy computed the bit is addressed next.
+\textbf{The settling experiment, which localises the confound rather than excluding it.} We fit the mixed probe on two of the four inferred-truth templates, froze it, and
+scored it on the two held-out templates (different domains, variable names and comparison wordings) with per-trial codebook randomisation decorrelating the emitted symbol, and with a same-task control arm
+frozen from the same probe and scored on the fit templates at a fresh seed ($N{=}2000$ per arm). The three
+subsets are matched on capability (compliant accuracy $0.764$ fit, $0.741$ held-out, $0.785$ control), so a
+drop cannot be attributed to the model failing to compute the bit. Over the layers where the control
+carries signal at all, the frozen probe peaks at \tm{} $= \mathbf{0.984}$ at layer 28 against a control of $1.000$, a transfer cost of $\mathbf{-0.016}$, and holds $0.962 / 0.942 / 0.931$ at layers 32 / 40 /
+42 ($-0.038 / -0.058 / -0.069$). Freezing is not free, and the cost is strongly depth-dependent: it is
+$-0.285$ at layer 20 and $-0.221$ at layer 24. So a frozen probe is measurably worse than a refit one on a
+new task, by an amount that depends on where it is read (Fig.~\ref{fig:settling}).
+
+\textbf{Why this task forecloses the probe-side alternative.} That concern turns on what the label actually is. Because exactly one operand is drawn from a high
+band and one from a disjoint low band, the truth bit is not a general magnitude comparison: writing $S$ for
+``the first slot holds the high-band value'', the bit is $S$ under the ``greater'' rule and $\lnot S$ under
+``lesser''. The label is therefore the exclusive-or of $S$ with the rule orientation, exactly and
+by construction. An exclusive-or of two features is not linearly separable in those features, so no single
+direction combines a representation of $S$ with a representation of the rule word into the bit. A linear
+probe cannot perform this comparison from the raw ingredients; something must already have combined them,
+and at the final prompt position combining information carried by the operand and rule tokens requires attention, that is, the policy's own computation. The one residual case, that the activations happen to
+carry a nonlinear interaction of the two factors which a linear probe can then read off, is not the
+confound but an instance of the claim.
+
+\textbf{The two ingredients, measured.} The argument above
+would be empty if $S$ and the rule orientation were not linearly present at the read position to begin
+with, so we probe for each of them separately: same cell, same nine layers, same $N{=}2000$ and the same
+seed as the fit arm above. Both read AUROC $1.000$ at layers 8 and 16, exactly where the bit itself
+is at chance ($0.442$ / $0.530$), and $0.934$ / $1.000$ already at layer 4. So the information a
+probe-side comparison would need is \emph{perfectly} linearly available, and a
+linear probe still cannot produce its exclusive-or: the alternative is demonstrably unavailable to
+a linear map on this task rather than merely unproven. The single-orientation arm doubles as an
+end-to-end check on the $S$ label, since with the rule pinned the bit reduces to $S$ exactly and the two AUROCs must coincide: they agree to $\mathbf{0.0\times10^{0}}$ at all nine layers. The rule's decodability is close to lexical, the orientation being a phrase in the prompt, so
+its $1.000$ is unsurprising and is \textbf{not} a finding about the model; its only role is to establish
+that the ingredient is there for a probe to use. And the scope does not widen: one model, one arm, one task
+family.
+
+\textbf{The single-orientation arm as positive control.} Fixing the
+rule removes the exclusive-or: with ``greater'' pinned, the bit simply \emph{is} $S$, a shallow feature
+available from operand magnitudes without reading the rule. A probe fit there reads $1.000$ at layer 8,
+where the mixed-orientation fit sits at chance ($0.442$ / $0.530$ at layers 8 / 16), and when frozen and scored on flipped-rule trials it \emph{inverts}, reaching exactly $0.000$ at layers 16 and 20 and staying
+below chance from layer 4 to layer 24, against a control at $1.000$. So the instrument detects
+probe-side computation when it is possible, and reports its absence when it is not. Both arms then recover
+at layer 28 ($0.939$ contaminated, $0.984$ clean) before easing to ${\approx}0.82$ and ${\approx}0.93$ at
+the final layer. On the clean fit a probe \emph{refit} on the held-out templates is also at chance shallow
+($0.474$ / $0.496$), so no shallow signal exists for any probe to read; on the contaminated arm a refit
+probe reads $1.000$ from layer 16 up, so what fails there is the frozen direction, not the held-out task.
+An inversion is a stronger signal than chance, so neither shallow result can be an artifact of weak
+capability. This supersedes rather than fulfils the prompt-only baseline our own specification
+asked for: the confound that baseline was meant to detect is not linearly available to begin with, and the
+single-orientation arm exhibits what its signature looks like when it is.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{fig_settling.png}
+\caption{\textbf{The settling experiment.} The same frozen probe scored on a held-out task (solid) and on
+its own same-task control (dashed); the shaded gap is the transfer cost, and the dotted line is what
+refitting on the held-out task would give. Left, clean fit: with both rule orientations in the fit
+the bit is the exclusive-or of two prompt facts, so no shallow shortcut exists: the frozen probe is at chance shallow, where a \emph{refit} probe is also at chance ($0.474$/$0.496$), and transfers at
+$\mathbf{0.984}$ ($-0.016$) at layer 28, $0.962$/$0.942$/$0.931$ at layers 32/40/42. The cost is
+depth-dependent and worst at layer 20 ($-0.285$; layer 24, $-0.221$). Right, contaminated fit:
+restricting the fit to one orientation removes the exclusive-or, the bit becomes the shallow feature
+``which slot is larger'', and the frozen probe \emph{inverts} to $0.000$ at layers 16 and 20 under a rule flip: the probe-side confound, measured. Both arms peak at layer 28 and ease off. Grey spans mark layers
+where the control itself is at chance, so a small gap there reflects no signal rather than good transfer.
+Gemma-2-9B instructed, $N{=}2000$ per arm, capability matched ($0.764$/$0.741$/$0.785$).}
+\label{fig:settling}
+\end{figure}
+
+\textbf{Two by-products of building that task.} First, a frozen
+instruction-following limit: base models compute such a comparison reliably under the plain rule but not
+under an \emph{inverted} one, in all three families we tried (App.~\ref{app:infer}). They
+answer from operand magnitude and largely ignore the comparison word, which is also why the cell above is
+capped at compliant accuracy $0.733$. Second, a learnability finding: RL did not learn a role-conditional
+policy over an \emph{inferred} bit in any of three attempts, across two families and both task variants,
+with no convergence to any reward basin, which is why the cell above is an instructed arm. We frame this
+strictly as a fact about what this reward signal makes learnable in this game, \textbf{not} as evidence
+about truth representations.
+
+\section{Wording generality and compliance tracking}
+\label{app:objections}
+
+These are the two objections to the instruction-pair readout of App.~\ref{app:instrpair}.
+
+
+\textbf{Is the instruction readout merely a two-string discriminator?} With a single fixed pair, ``which
+instruction was present'' is decidable from any surface difference between two fixed strings. We settle this
+with leave-one-wording-out over a five-wording bank: five fits, each trained on four wordings and
+scored on the fifth, under a doubly-held-out split that partitions \emph{both} episodes and wordings and uses
+only the diagonal cell. Every wording is held out exactly once, so the spread across folds is a
+wording-generalization spread, not a resampling artifact.
+
+\begin{center}
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lccccc}
+\toprule
+wording held out & L8 & L16 & L24 & L32 & L42 (final) \\
+\midrule
+0 & 1.000 & 1.000 & 1.000 & 1.000 & 1.000 \\
+1 & 1.000 & 1.000 & 1.000 & 1.000 & 1.000 \\
+2 & 0.969 & 1.000 & 1.000 & 1.000 & 1.000 \\
+3 & 1.000 & 0.825 & 1.000 & 0.998 & 0.942 \\
+4 & $\mathbf{0.404}$ & $\mathbf{0.501}$ & 0.991 & 0.974 & 0.867 \\
+\midrule
+\textbf{range} & 0.596 & 0.499 & $\mathbf{0.009}$ & $\mathbf{0.026}$ & 0.133 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{A depth-dependent answer, against a pre-registered threshold} (a range of
+$0.05$ or less counts as wording-invariant). \emph{At layers 24 and 32 the readout is wording-invariant}: range $0.009$ and $0.026$, minimum $0.974$, so every wording is classified at least that well by a probe that
+never saw it. The two-string objection is answered there. \emph{In the shallow stack it is not:} one wording
+sits at $0.404$ and $0.501$, i.e.\ at or below chance. Below chance is systematic inversion rather
+than mere absence of signal: AUROC is antisymmetric under label negation, so a reversed-sign readout of the
+same direction would score $0.596$. (AUROC is a ranking statistic, so this is a statement about ordering,
+not a classification rate.) So ``the instruction signal generalizes across surface form'' holds from layer 24
+up and is a per-wording accident before that. The final layer is intermediate (range $0.133$, minimum
+$0.867$) and we report it as a range, not a point.
+
+\textbf{Why the shallow readout fails.} Four of our five wordings distinguish
+their honest from their deceptive half with a \emph{lexical polarity} cue (truth/falsehood,
+correct/wrong, disclose/withhold); the fifth was deliberately built with no negation vocabulary on either
+side, separable only by the value mapping itself. That suggests the shallow probe latches onto the cue, and
+it makes a falsifiable prediction about a cross-wording transfer matrix, which we pre-registered and then
+ran: fit on wording $i$ alone, score on wording $j$ alone, all $20$ ordered pairs, episodes held out
+throughout. \emph{At layer 8 the prediction holds on all three clauses}: transfer among the four cue-carrying
+wordings is uniformly high (all $\ge 0.801$, mean $0.948$), while the cue-free wording is unreadable from any
+of them (column mean $\mathbf{0.497}$) and offers nothing in return (row mean $\mathbf{0.463}$). The most
+extreme cell, fitting on the cue-free wording and scoring on the strongest-cue one, reads $\mathbf{0.053}$, a strong rank inversion, the signature of a cue that is present but points the wrong way.
+
+Above layer 8 the asymmetry \emph{reverses}, and we flag this as a post-hoc observation rather than a
+registered result: by layer 16 a probe fit on the cue-free wording reads the others at $0.928$--$1.000$
+while they still cannot read it (column mean $0.596$), and by layer 24 the matrix has largely converged
+(worst cell $0.699$). The cue-free wording is not therefore the best one to train on: by mean transfer it is the \emph{worst} of the five at three of four depths. The defensible
+claim is narrower: it is the most diagnostic wording, and the five folds must not be averaged as
+though exchangeable, since only one of them tests generalization to a cue-free target.
+
+\textbf{The trough on a denser layer grid.} It is at layer 12, not layer 8, and there the cue-free wording
+is inverted in \emph{both} directions (row mean $0.233$, with individual cells as low as $0.092$; column mean
+$0.397$). Recovery is then abrupt: by layer 20 the matrix is fully converged (every cell $1.000$, column
+mean $0.976$) before drifting down again in the last third of the stack.
+
+\textbf{The inversion is not an evaluation-sampling artifact.} With episode-level bootstrap intervals on
+every cell ($2000$ resamples), all $20$ cells at each of layers 8, 12 and 20 have 95\% intervals that exclude $0.5$, including all eight inverted cells at layer 12, which are tight and far from chance:
+the cue-free row reads $[0.12,0.14]$, $[0.08,0.11]$, $[0.30,0.32]$, $[0.39,0.40]$ and its column
+$[0.39,0.41]$, $[0.45,0.46]$, $[0.43,0.44]$, $[0.28,0.31]$. \emph{So the trough is a real feature of this
+fit rather than noise.} The bootstrap resamples
+held-out episodes while holding the fitted probe, the training wordings and the partition fixed, so it
+measures evaluation variability at a fixed fit and is \emph{not} a statement about refit stability. The two are distinct quantities.
+
+\textbf{Two further families: the ordering replicates, the inversion does not.} Running the same matrix on Llama-3.1-8B, the cue-free wording is again the hardest
+target at every depth (column mean $0.53$--$0.75$ against a cue-carrying block of $0.72$--$0.999$), but no cell anywhere falls below $0.500$. Qwen2.5-14B ($N{=}2000$, seven depths) gives the same
+verdict: the cue-free column mean is the lowest of the three at \emph{every} depth
+($0.507$, $0.540$, $0.570$, $0.620$, $0.861$, $0.806$ at layers $4$--$48$, against a cue-carrying block
+reaching $0.99$), while the cue-free \emph{row} mean never drops below $0.566$ and nothing inverts from
+layer 8 up. So ``four of five wordings share a polarity cue and the cue-free one is the hardest target''
+holds in all three families we tested, while ``the shallow probe latches onto the cue hard enough
+to invert'' holds in one of three and is, on present evidence, specific to Gemma, as is the \emph{location} of the anomaly, since Qwen's worst depth is its shallowest rather than a mid-stack trough.
+\emph{One caveat against over-reading Qwen's shallowest layer:} at layer 4 its matrix has eight sub-chance
+cells scattered across the cue-carrying block itself (as low as $0.081$) and its grouped directive readout
+is only $0.824$, so that layer is generally unstable rather than specifically cue-driven. The negative rests
+on layers 8 and above, where the matrix is well behaved.
+
+\textbf{Which layers this claim may be anchored at, measured two ways.} Refitting the probe under five different split seeds (a new held-out wording set and a new episode partition each time) gives an across-refit sd of $0.0045$ at layer 8, $\mathbf{0.081}$ at layer 16, $\mathbf{0.0099}$ at layer 24,
+$0.028$ at layer 32 and $0.035$ at layer 42. The leave-one-wording-out folds above rank the layers
+identically (range $0.009$ at layer 24 and $0.026$ at layer 32, against $0.50$--$0.60$ shallow), so two
+independent instruments agree that layers 24--32 are where this readout is stable and layers 16 and
+42 are where it is not. This also settles an apparent contradiction in our own numbers. The final-layer
+value moved from $0.965$ to $0.849$ to $0.897$ across three runs, a range of $0.116$, while its \emph{bootstrap} sd was $0.0076$, apparently a twelve-fold contradiction. The refit sd at that layer is
+$0.035$, with a range of $0.102$: the run-to-run movement is ordinary refit variance, and the
+bootstrap simply could not see it, because it resamples evaluation episodes while holding the fitted probe
+and the partition fixed. An interval that omits the dominant variance component is not a stability claim, and
+we quote the refit spread instead.
+
+\textbf{Two concessions.} The ungrouped $1.000$ was measured on a split in which 100\% of test rows
+had their matched twin in training: with a matched-pair design the row-level split is maximally leaky,
+because the twin differs only in the label. And this is five wordings from one bank on one model and one
+task; the invariance we demonstrate is over those five. The matrix carries per-cell intervals but comes from
+a single fit, so it is evidence consistent with the lexical-cue mechanism rather than a uniquely identifying
+test of it: a different set of cue-carrying wordings could produce the same pattern for a different reason.
+
+\textbf{Does the instruction-fit direction track who actually lied?} This is the question the protocol
+implicitly claims, and on a non-leaky split our answer is no at the layers that matter. We restrict
+to the adversarial subset and split on compliance. Expectation is not what makes that split available:
+$\gamma < 1$ leaves a disobedient fraction on average, but the realized counts are what decide it, and the
+held-out cell contains 238 complied and 52 disobeyed trials, clearing our minimum of 25 in both
+halves. Compliance AUROC, with episode-level bootstrap intervals over 145 episodes:
+
+\begin{center}
+\small
+% \tabcolsep trimmed and the comma-space dropped inside each interval: at the default spacing this row ran
+% 14.7pt past \textwidth, and an overfull box is a visible defect rather than a warning.
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lccccc}
+\toprule
+layer & 8 & 16 & 24 & 32 & \textbf{42 (final)} \\
+\midrule
+held-out split & 0.705 & 0.640 & 0.689 & 0.593 & $\mathbf{0.365}$ \\
+95\% CI & [0.613,0.793] & [0.568,0.707] & [0.632,0.741] & [0.534,0.653] & $\mathbf{[0.293,0.438]}$ \\
+row-level (leaky) & 0.721 & 0.813 & 0.840 & 0.806 & 0.736 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\emph{The leak inflated this quantity by up to} $\mathbf{0.37}$, the largest leak-induced distortion we
+measured, for the reason given above. But the decisive observation is not the leak.
+
+\textbf{Non-identifiability across instruction wordings: the sign reverses.} Repeating the
+compliance split inside each leave-one-wording-out fold, it is available in only two of the five, and those two disagree in \emph{direction} at four of five layers:
+
+\begin{center}
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lccccc}
+\toprule
+wording held out & L8 & L16 & L24 & L32 & L42 (final) \\
+\midrule
+3 & 0.325 & 0.477 & 0.781 & 0.652 & $\mathbf{0.607}$ \\
+4 & 0.638 & 0.483 & 0.394 & 0.200 & $\mathbf{0.080}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+At the final layer one fold scores compliance at AUROC $0.607$ $[0.542, 0.670]$ while the other scores it at $0.080$ $[0.048, 0.113]$, which by antisymmetry is an AUROC of $0.920$ for \emph{disobedience}. The intervals are
+tight and nowhere near overlapping. We therefore make no claim that the instruction-fit direction tracks who actually
+lied, in either direction, at any layer. A quantity whose sign depends on which instruction wordings the probe
+was fitted on is not a measurement of the model.
+
+\textbf{The paper's own diagnosis, inside the field's protocol.} Where \S\ref{sec:refit} has two probes on the same activations returning opposite
+verdicts under different prompt variants, here refitting on a different subset of \emph{instruction
+wordings} reverses a compliance prediction. We state it as differently-fitted directions disagreeing: the folds train on different wording sets, so these are different fits, not one unstable direction. We offer no mechanism for it.
+
+\textbf{The availability pattern as the design rule in action.} The split needs disobedient trials,
+and the per-wording disobedience rate spans $\mathbf{0.000}$ to $\mathbf{0.309}$: two of the five wordings draw
+\emph{perfect} compliance, so their identification test would need ${\sim}2550$ adversarial trials rather than
+the ${\sim}81$ the most disobedient wording needs. \emph{The pooled rate, $0.128$, predicts none of the five.}
+On a second family the whole protocol falls off the same cliff: Qwen2.5-14B complied with the
+deceptive instruction on 1490 of 1490 adversarial trials, pooled over all five wordings, so
+$d_{\mathrm{deceptive}} = 1.000$ and Eq.~\ref{eq:designrule} returns \emph{unattainable at any $N$}: the compliance split is unavailable on that family for a pure design reason, with no probe fitted. Its aliasing
+rate is nonetheless non-degenerate ($\gamma = 0.985$ with $d_{\mathrm{honest}} = 0.029$, so
+Eq.~\ref{eq:gamma} is doing real work rather than reducing to an endpoint), which is precisely the
+combination the rule is meant to catch: high but sub-unit aliasing that still leaves no testable subset.
+Anyone applying Eq.~\ref{eq:designrule} must evaluate it on the subset they intend to split, and against the fraction that split actually consumes: for a compliance split that is $1 - d_{\mathrm{deceptive}}$, not the
+pooled $1 - \gamma$, which also counts honest-rung disagreements the split cannot use.
+
+\section{The causal analysis}
+\label{app:causal}
+
+This is the causal analysis \S\ref{sec:limits} summarises.
+
+\textbf{Decodability, not causal use.} \tm{}
+$= 1.000$ says a linear map recovers the bit, not that the model uses it. We tested both directions causally, the conventional ally-fit one and the mixed-fit one this paper hands back, at the layer where the ally-fit readout is fully collapsed, on the task the direction was fitted on, at $N{=}1000$ per condition.
+
+\emph{Steering is null, and on two arms.} Sweeping $\alpha = 5/10/20/40$ moves nothing. On the saturated
+reward-trained arm the rival-truth rate is $0.000$ at every $\alpha$, which bounds the effect at
+0.3 percentage points per tested condition (exact one-sided 95\% bound on $0/1000$). \emph{Per
+condition} is the qualifier that matters: eight conditions were inspected ($4$ values of $\alpha$ $\times$ two sign
+modes), so this is not a simultaneous $95\%$ bound over the sweep, and the conditions share episodes and are
+therefore not independent tests to be pooled. We also note this arm sits on a floor, since its
+unperturbed rival-truth rate is already $0.000$, so only an increase was detectable. The instructed arm has no such floor (its baseline is ${\approx}0.20$) and there the rate is flat at $0.214$--$0.226$ across an eightfold range of $\alpha$ ($0.65$ sd; a genuine linear steer
+would scale with $\alpha$). We also ran a signed variant that takes its sign from the ground-truth label, an oracle no deployed detector could have, precisely because unsigned steering could cancel across trials. It is identical to the unsigned arm at every $\alpha$, to all reported digits,
+and that agreement is mostly forced rather than measured: on true-bit-$1$
+trials the oracle sign is $+1$, so the two arms are literally the same intervention there, and on true-bit-$0$ trials, the only trials where they differ, the rate is pinned at $0.000$ in every
+condition of both arms. So the signed arm does not independently corroborate the null. What it does
+establish is narrower: on true-bit-$0$ trials $-\alpha d$ fails to move the rate off
+its floor just as $+\alpha d$ does, so on that subpopulation both directions were tested and both are null.
+The cancellation explanation is excluded only there, and the decisive test, $-\alpha d$ on true-bit-$1$ trials, we have now run, along with the ally-fit comparison; both are reported in
+\S\ref{sec:signed} immediately below, and the depth sweep that was previously missing is in
+\S\ref{sec:depth}.
+
+\subsection{The two directions separate exactly where the collinearity breaks}
+\label{sec:geom}
+
+Before the causal comparison, a geometric one that costs nothing. Our probe files store the ally-fit and
+mixed-fit coefficient vectors for the same target at the same layers, fitted by the same code on the same
+activations. Their cosine, per layer:
+
+\begin{center}
+\footnotesize
+\begin{tabular}{lcccccc}
+\toprule
+ & \multicolumn{3}{c}{shallow} & \multicolumn{3}{c}{deep} \\
+\cmidrule(lr){2-4}\cmidrule(lr){5-7}
+Gemma-9B, stated, RL & $+0.976$ & $+0.977$ & $+0.951$ & $\mathbf{+0.396}$ & $\mathbf{+0.549}$ & $+0.532$ \\
+Qwen-14B, stated, RL & $+0.965$ & $+0.985$ & $+0.985$ & $\mathbf{+0.538}$ & $+0.532$ & $+0.583$ \\
+Llama-8B, stated, RL & $+0.928$ & $+0.986$ & $+0.775$ & $+0.591$ & $+0.591$ & $\mathbf{+0.561}$ \\
+Mistral-7B, stated, RL & $+0.915$ & $+0.969$ & $+0.879$ & $+0.682$ & $+0.648$ & $\mathbf{+0.589}$ \\
+Gemma-9B, \emph{inferred}, instr. & $\mathbf{+0.732}$ & $\mathbf{+0.752}$ & $\mathbf{+0.683}$ & $+0.620$ & $+0.581$ & $+0.529$ \\
+Qwen-14B, \emph{inferred}, instr. & $\mathbf{+0.651}$ & $\mathbf{+0.708}$ & $\mathbf{+0.748}$ & $+0.611$ & $+0.420$ & $+0.435$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+{\footnotesize Layers: Gemma $4/8/16 \to 24/32/42$; Qwen $4/8/16 \to 32/40/48$; Llama and Mistral
+$4/8/16 \to 20/24/32$.}
+
+\textbf{The two fits on the stated-bit task.} They recover nearly the same vector in the shallow stack and
+separate sharply at depth, in all four families, and always at $57$--$67\%$ of the stack, so the effect is not
+tied to an absolute layer index. Where the labels are collinear, how you fit does not
+matter; where they decorrelate, it decides which axis you get.
+
+\textbf{One thing the cosine is not.} The deep value
+varies only over $0.53$--$0.60$ across these four arms, whose rival deception rates span $0.47$ to $1.000$.
+So the angle separates the two fits everywhere at depth, but it does \emph{not} grade with how much the
+policy's behaviour aliases truth with action. It is a qualitative signature of the two fits diverging, not a
+measurement of aliasing.
+
+The last two rows are the informative ones. When the bit is \emph{inferred} rather than stated, truth,
+action and token are less collinear from the outset, and the shallow cosine is correspondingly lower, at $0.68$--$0.75$ on Gemma and $0.65$--$0.75$ on Qwen, against $0.78$--$0.99$ for every stated-bit row.
+That is the direction the aliasing account predicts, and it now holds on two
+families. The contrast is not an arm effect, which the table alone would leave open, since every stated-bit
+row above is a reward-trained arm and both inferred-bit rows are instructed: the \emph{instructed}
+stated-bit arm swept in \S\ref{sec:depth} sits at $0.950 / 0.996 / 0.986$ shallow, with the stated-bit
+rows and not with the inferred ones, so it is the task and not the training route that moves the
+shallow cosine. We still put it no more strongly than a qualitative pattern: it is two task-contrast
+rows against four stated-bit rows, the deep values overlap across conditions, and a cosine between
+coefficient vectors is not itself a measurement of aliasing.
+
+It also settles an ambiguity the AUROCs alone cannot. A separation index of ${\approx}2$ is consistent both
+with two distinct directions and with \emph{one} axis whose sign the mixed fit merely resolved. The latter
+would give $\cos \approx -1$. We measure $\cos \approx +0.55$ at layer 32, so these are two different
+directions, roughly $57^{\circ}$ apart.
+
+\subsection{The signed test, and what the ally-fit direction does}
+\label{sec:signed}
+
+We swept $\alpha$ \emph{through zero}, ten values from $-1.37$ to $+1.37$ times the median residual norm, against a single in-run $\alpha{=}0$ baseline, so the whole dose--response is one measurement rather
+than a comparison across runs. On the instructed arm (the one with no floor) the mixed-fit direction gives a
+monotone, ordered response on true-bit-$1$ trials over $\alpha_{\mathrm{rel}} \in [-1.37, +0.69]$:
+$0.365$ at the negative end, rising through the $0.419$ baseline, to $0.524$ at $+0.69$. It then falls back
+to $0.431$ at $+1.37$, which we read as the usual large-$\alpha$ degradation rather than part of the
+response. So $-\alpha d$ does lower the true-bit-$1$ rate, and the axis has signed influence: the test we previously flagged as unrun.
+
+\textbf{Why this does not license a truth-steering reading.} The true-bit-$0$
+rate is exactly $0.000$ at every $\alpha$, in both directions, out to $1.37\times$ the residual
+norm. A direction carrying truth causally should rescue true-bit-$0$ trials when pushed the other way; it
+never does. The effect is confined to the subpopulation already near the decision boundary, and it moves in
+the direction of one token.
+
+\textbf{The paired, per-trial form.} Every $\alpha$ cell runs on the same episodes, so this can be said per
+trial, not per rate. Matching trials across cells (an ordering we verify by
+checking that the true bit, codebook and role agree position-by-position across all $1000$
+records) and applying McNemar to the discordant pairs: on true-bit-$1$ trials the flips are almost perfectly one-sided: for the ally-fit direction at $\alpha_{\mathrm{rel}} = \mp0.686$, $351$ trials switch toward
+the truthful answer and $\mathbf{0}$ switch away ($p \approx 4\times10^{-106}$), with the same one-sidedness
+at every smaller dose and for the mixed-fit direction at smaller magnitude ($79$ versus $0$). On
+true-bit-$0$ trials the discordance is exactly zero in $25$ of the comparisons: not one trial of $496$
+changes state, in either direction, at any dose up to $0.686$. That closes a loophole the aggregate rates leave open: a $0.000$-versus-$0.000$ comparison is consistent with equal numbers of trials flipping each
+way and cancelling, and here nothing flips at all. The single exception is the ally-fit direction at the
+extreme $\mp1.373$, which rescues $57$ of $496$ true-bit-$0$ trials, strictly in one direction ($p \approx 1\times10^{-17}$), the large-dose token-preference effect noted below, and nowhere else.
+
+\textbf{The same question where there is no floor, on two
+families.} Every argument above rests on true-bit-$0$ sitting at $0.000$, and a rate pinned at an extreme
+cannot fall. The inferred-bit arms are the cells in which \emph{both} rates are interior at baseline (Gemma-9B at true-bit-$1$ $0.240$ / true-bit-$0$ $\mathbf{0.700}$, Qwen-14B at $0.609$ / $\mathbf{0.145}$), so both are free to move in either direction, and the truth-versus-answer question becomes directly
+decidable. A truth axis pushed toward truth must raise \emph{both} rates; an answer axis must move
+them in opposition. On Gemma the ally-fit direction moves them in opposition at every one of the
+nine doses at which it moves them at all, monotonically and symmetrically:
+
+\begin{center}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lccccccc}
+\toprule
+$\alpha_{\mathrm{rel}}$ & $-1.40$ & $-0.70$ & $-0.35$ & $0$ & $+0.35$ & $+0.70$ & $+1.40$ \\
+\midrule
+true-bit-$1$ rate & $0.215$ & $0.209$ & $0.224$ & $0.240$ & $0.261$ & $0.279$ & $0.286$ \\
+true-bit-$0$ rate & $\mathbf{0.766}$ & $0.725$ & $0.710$ & $0.700$ & $0.683$ & $0.673$ & $0.692$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Pushed one way it makes the model likelier to answer truthfully when the truth is $1$ and \emph{less} likely
+when the truth is $0$; pushed the other way, exactly the reverse. That is one token-preference knob, read as
+``truth'' on one subpopulation and ``lying'' on the other.
+
+\textbf{Replication on a second family, with a larger effect.} We ran the identical contrast on
+Qwen2.5-14B's inferred-bit arm, at layer 40 of 48, chosen because that is where \emph{its} ally-fit probe is most action-aligned, reading $0.285$, whereas Gemma's inferred ally-fit probe never inverts. Of the twelve
+non-zero doses, ten move the two rates in opposition, and over the well-behaved range
+$|\alpha_{\mathrm{rel}}| \leq 0.535$ the true-bit-$0$ rate falls \emph{strictly} monotonically
+($0.186 \to 0.114$) while true-bit-$1$ rises ($0.526 \to 0.689$), swings of $84$ and $35$ trials, roughly
+double what the Gemma cell gives. The two exceptions are a single-trial wiggle at the smallest positive dose
+and the largest dose $|\alpha_{\mathrm{rel}}| = 1.07$, where both rates degrade together in the
+representation-damage pattern reported throughout.
+
+\textbf{The conclusion does not depend on the floor}: on both arms where the rates could move freely, the
+axis fails the truth-axis test in the direction the identification account predicts. The mixed-fit direction
+is by comparison inert on both ($|\Delta| \leq 0.019$ on Gemma, $\leq 0.041$ on Qwen, with no consistent sign
+and a U-shaped rather than ordered response on Qwen), which is the same ordering seen everywhere else.
+
+\textbf{The comparison with the ally-fit direction, the unidentified one this paper criticizes.} Both directions come from the same fit on the same activations, differing only in which
+contexts the fit saw, so we can perturb each at the same layer, arm and episodes. We compare them at
+\emph{matched} $\alpha$, because the total swing saturates and then hides the difference:
+
+\begin{center}
+\footnotesize
+\begin{tabular}{lcccc}
+\toprule
+ & $|\alpha_{\mathrm{rel}}|$ & mixed-fit & ally-fit & ratio \\
+\midrule
+Gemma-9B L32, instructed          & $0.34$ & $+0.125$ & $+0.452$ & $3.6\times$ \\
+Gemma-9B L24, instructed          & $0.46$ & $+0.427$ & $+0.984$ & $2.3\times$ \\
+Qwen-14B L32, reward-trained      & $0.27$ & $0.000$ & $+0.036$ & n/a \\
+Gemma-9B L32, \emph{inferred} bit & $0.35$ & $\mathbf{-0.004}$ & $+0.037$ & n/a \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The comparison is at the nearest available \emph{relative} dose, not a matched raw $\alpha$: the median
+residual norm differs by layer and model, so the same $\alpha$ is a three times larger perturbation on Qwen
+than on Gemma. At matched relative dose the ally-fit direction produces the larger displacement in
+all four cells. We report a ratio in only two of them. A ratio is meaningful only when both arms moved the same way by an amount larger than noise,
+and in two cells the denominator fails that test: the Qwen mixed-fit response is exactly zero at this dose,
+and the inferred-bit mixed-fit response is \emph{negative}: a $-0.004$ displacement is $2$ trials out of $517$, and pointing the wrong way. Dividing by either would manufacture a large multiplier out of an absent
+effect, so we print a dash. Pushing Qwen harder separates the two directions without needing one: at
+$\alpha_{\mathrm{rel}} = 1.09$ the ally-fit direction takes the true-bit-$1$ rate to $1.000$ while the
+mixed-fit direction is still at $0.000$, and the mixed-fit direction only reaches $0.569$ at twice that dose.
+So the claim is a consistent \emph{ordering}, not a multiplier: where both arms move, the ratio is
+$2.3$--$3.6\times$, and at saturation it necessarily goes to $1$.
+
+\textbf{The axis at high dose.} At layer 24, from
+$\alpha_{\mathrm{rel}} = \pm0.92$ upward, \emph{both} directions achieve total control of the answer: the
+true-bit-$1$ rate goes to $0.000$ under negative $\alpha$ and $1.000$ under positive, with true-bit-$0$
+moving in exact opposition ($1.000$ and $0.000$). The model emits whichever token we choose and the ``truth
+rate'' follows mechanically. That is an answer axis, not a truth axis, and it is why the two directions tie at layer 24's high doses.
+
+\textbf{Both directions on the inferred-bit task.} In absolute terms they become nearly inert. The largest
+true-bit-$1$ range we can produce anywhere on the sweep is $0.077$ (ally-fit) and $0.021$ (mixed-fit),
+against $0.768$ on the stated-bit task at the same layer. The more informative difference is not the
+magnitude but whether the response is \emph{ordered} in $\alpha$ at all: the ally-fit direction still is,
+rising monotonically across the sweep ($108 \to 148$ truthful trials of $517$ from
+$\alpha_{\mathrm{rel}} = -0.69$ to $+1.40$), whereas the mixed-fit direction falls weakly with $\alpha$
+($134$ at the negative end down to $123$, before rebounding to $129$ at the largest dose) and never leaves a
+$0.021$ band. So on this task the mixed-fit direction has no dose--response to speak of, rather than a small
+one: it is neither ordered in $\alpha$ nor large enough to be worth a ratio. This is consistent with an axis that controls
+which token is emitted having little to grip when the target quantity is not that token. That arm
+also has a different baseline ($0.240$ against $0.419$), a separately
+trained adapter and a harder task, any of which could reduce sensitivity, so the comparison is consistent
+with the token account without isolating it from those alternatives.
+
+\textbf{Why this confirms the diagnosis.} On ally data truth, action
+and emitted token share a label vector, so the ally-fit ``truth'' probe is an action probe; steering along
+the axis that predicts the emitted token moves the emitted token. The mixed-fit direction isolates truth
+\emph{as distinct from} action, and that component has markedly less purchase on the answer.
+One thing we can \emph{not} claim: the gap does not visibly grade with how often the policy lies. We see the same ordering at rival
+deception $0.545$ and $0.639$ as at $1.000$, and the geometric analogue, the deep cosine of \S\ref{sec:geom}, is likewise flat across that range. Aliasing on the \emph{fitting} data is a property of
+the protocol rather than of the policy, so there is no reason to have expected a gradient in the deception
+rate; we report the absence of one so that it is not read into the results later.
+Identification and causal potency come apart: the better measurement of truth is the weaker lever on
+behaviour, and what the field has been steering is largely the action axis wearing a truth label.
+
+\subsection{The advantage appears exactly where the two directions separate}
+\label{sec:depth}
+
+The comparison above is at one layer, which leaves open whether the ally-fit advantage has anything to do
+with the two directions \emph{differing}. \S\ref{sec:geom} says they are nearly the same vector shallow and
+separate at depth, so that account makes a prediction: the advantage should be absent where
+$\cos \approx 1$ and present where the fits diverge. We ran the identical contrast at five layers, sweeping
+$\alpha$ over a $128\times$ range at each because the median residual norm grows more than tenfold across the
+stack ($83$ at layer 8 to $860$ at layer 40) and a grid fixed in raw $\alpha$ would not be comparable.
+The five dose--response pairs are plotted in Fig.~\ref{fig:depthsweep}.
+
+\begin{center}
+\footnotesize
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{lccccc}
+\toprule
+layer & 8 & 16 & 24 & 32 & 40 \\
+\midrule
+$\cos(\hat d_{\mathrm{ally}}, \hat d_{\mathrm{mixed}})$ & $0.996$ & $0.986$ & $0.773$ & $0.603$ & $0.540$ \\
+ally-fit advantage & none & none & clear & clear & \emph{both inert} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Where the two fits are nearly one vector.} At layers 8 and 16,
+$\cos \geq 0.986$ and the two dose--response curves lie on top of each other (Fig.~\ref{fig:depthsweep}, first two panels), with no advantage either way, so the two are causally interchangeable there. Where they separate, at layers 24 and 32, it is the ally-fit
+direction that carries the behaviour: at layer 32 it drives the true-bit-$1$ rate from $0.16$ to $0.93$
+across the sweep while the mixed-fit direction moves only $0.36$ to $0.52$. So the cosine predicts where the
+advantage appears: the criticized direction is potent only in the
+regime where the two fits have separated.
+
+\emph{We report this as an ordering and not as a potency ratio.} A ratio here is not a
+stable quantity: at small doses the mixed-fit displacement is a noise-level denominator, at large doses both
+arms saturate and any ratio goes to $1$ by construction, and at layer 24 there are doses where the
+denominator points the \emph{opposite} way so the ratio is undefined rather than large. Quoting a multiplier, or worse a multiplier read off one chosen dose, would put a number on the claim that the
+underlying data do not support, the same failure we flag for the inferred-bit cell in \S\ref{sec:signed}.
+The two curves per layer are shown instead, so a reader can see the denominator that a ratio would hide.
+
+\textbf{Layer 40, the informative exception.} Its cosine is the \emph{lowest} we
+measure ($0.540$), so a simple ``more separation, more advantage'' rule predicts the largest effect there.
+Instead \emph{both} directions are inert: the mixed-fit spread is slightly negative at every dose and the
+ally-fit spread never exceeds $0.036$. The plain explanation is that layer 40 of 42 has almost no downstream
+computation left for a perturbation to act through, and we cannot separate that from a claim about the
+direction. The defensible statement is therefore that direction-separation is \emph{necessary} but not sufficient: the advantage needs both that the two fits differ and that the site has causal purchase
+at all. Reading the effect off a single chosen dose would make the five layers look monotone in the cosine,
+and they are not.
+
+\textbf{One consistency note, since the two look like they should conflict.} The advantage grades with the
+cosine \emph{across depth within an arm}, but not with the deception rate \emph{across arms} at fixed depth,
+where the deep cosine is itself flat. Both are the same statement: what predicts the advantage is how far
+apart the two fitted directions are, not how often the policy lies.
+
+Ablation on the ally-fit direction is void exactly
+as before (post-ablation
+decodability $0.968$ against a $0.600$ ceiling), so nothing in this section rests on an ablation. The Qwen arm sits on
+a $0.000$ floor, so its negative half is uninformative by construction. And these are genuinely different
+axes rather than one axis re-signed (\S\ref{sec:geom}).
+
+\emph{The ablation result is not a null; it is uninterpretable.} Projecting out the
+direction leaves behaviour unchanged, but our pre-registered positive control shows the intervention
+did not remove the information: a freshly fitted probe still recovers the bit at $1.000$ from the
+ablated activations, against a permutation-calibrated chance ceiling of $0.600$. The same holds for every
+rank of an INLP subspace ablation we could complete under an \emph{underdetermined} fit, up to $k{=}8$
+(Fig.~\ref{fig:causal}). Re-running the fit \emph{determined} ($n{=}4000 > d{=}3584$) changes this at
+$k{=}2$: post-ablation decodability falls to $0.600$ against $0.727$ for the underdetermined fit at the same
+rank, so the underdetermined subspace was under-removing by $0.128$, exactly the bias its own guard predicts, and the reason we do not report the underdetermined curve as a bound. We have now completed
+the determined ladder at both layers, and the result is that no rank at either layer licenses a causal
+null. At layer 32, post-ablation decodability is $1.000$, $0.5996$, $0.5911$ and $0.6077$ at
+$k = 1, 2, 4, 8$; at layer 24 it is $1.000$, $0.939$, $0.913$ and $0.997$. Behaviour is unchanged
+throughout (ally truth rate $1.000$).
+
+\textbf{Two of the eight cells clear the reported ceiling.} That ceiling is $\max$(a tolerance we chose, the
+label-permutation null), i.e.\ the \emph{more permissive} of the two, and our tolerance ($0.600$) is the
+looser one at every cell. Measured against its own permutation null instead, every cell at both
+layers sits above it: at layer 32 the nulls are $0.576$, $0.580$, $0.576$ and $0.581$, so even $k{=}2$ and $k{=}4$, which clear $0.600$ by $0.0004$ and $0.009$, are $0.020$ and $0.015$ \emph{above} the calibrated band, and $k{=}8$ fails both criteria outright. So the pass/fail language is an artifact
+of the permissive $\max$, and we drop it. The bit remains partly decodable after every ablation we ran, so
+a flat behavioural rate is never licensed here as evidence about causal use.
+
+\textbf{What the completed ladder buys.} A quantitative depth contrast, which is weaker than a
+pass/fail one. The layer-32 ablation drives decodability down to
+$0.59$--$0.61$ while the layer-24 ablation leaves it at $0.91$--$1.00$, so the bit is markedly more distributed at layer 24, but neither layer yields an interpretable null, and the two passing layer-32
+cells are \emph{bounded by void cells on both sides} ($k{=}1$ and $k{=}8$), so they are a middle band rather
+than a trend. Removal does not keep improving with rank: $k{=}8$ is worse than $k{=}4$ at layer 32
+($0.608$ vs $0.591$) and worse at layer 24 as well ($0.997$ vs $0.913$). One caveat travels with the whole
+ladder: the positive control refits at $n{=}600$ against a $3584$-dimensional residual, which is why its
+permutation null sits near $0.58$ rather than $0.50$: the null absorbs that overfitting, which is exactly
+why it, and not our tolerance, is the criterion we now report against. A
+behavioural null is only
+evidence about causal use if the ablation worked, so we draw no causal conclusion from it. What it
+does show is a fact about dimensionality: the bit is not confined to that rank-1 subspace, since removing
+the direction leaves it fully decodable from the orthogonal complement.
+
+So the honest position is that the bit is linearly present and the mixed-fit direction we propose
+has no demonstrated causal traction at this site, while the ally-fit direction does
+(\S\ref{sec:signed}); the ablation arm is uninterpretable rather than negative. Four limits on
+reading even that. Whole-residual patching \emph{does} flip answers at $1.000$ (App.~\ref{app:apparent}), so information
+at this site is used by something, though that intervention replaces every role-, prompt-, action- and
+truth-associated component at once, so it says nothing about how many dimensions carry the effect. Our
+$\alpha$ range initially reached only $8.6\%$ of the median residual norm. We extended it sixteenfold,
+to $\mathbf{1.35\times}$ the residual norm, with an in-run $\alpha{=}0$ control passing through the same hook
+on the same episodes. On the saturated arm every cell still reads $0.000$, since adding a vector larger than the residual itself never moves the answer, so ``you did not push hard enough'' is excluded over that range.
+
+On the instructed arm the extended sweep does produce movement. The rival-truth rate rises from a measured baseline of $0.211$ to $0.264$ at
+$\alpha_{\mathrm{rel}} = 0.69$ (nominally significant), then \emph{collapses back} to $0.217$ at $1.37$. We
+pre-registered three criteria for counting a move as steering (monotone in $\alpha$, sign-appropriate under an oracle sign, and not mirrored by the unsigned arm), and it fails all three: the curve is non-monotone, and
+the signed and unsigned arms are identical to four decimals (which, as noted above, the construction forces on
+exactly the trials where the movement occurs). The mechanism is visible in the breakdown:
+on true-bit-$0$ trials the rate is exactly $0.000$ at every $\alpha$ in both directions, so the axis
+never induces a truthful answer there, and all movement is confined to true-bit-$1$ trials. That is the
+signature of a shift in \emph{answer bias}, raising the probability of one particular token, which is truthful on one subpopulation and deceptive on the other, not of steering toward truth. The decisive
+follow-up, whether $-\alpha d$ \emph{lowers} the true-bit-$1$ rate, is answered affirmatively in
+\S\ref{sec:signed}; it does, and the axis is nonetheless an answer axis rather than a truth axis, for the
+reason given there. And this is one site in
+one layer of one model family. Finally, App.~\ref{app:apparent}'s ``no arm difference'' is stated at the
+strength each measure supports, which is not uniform. On the answer-position readout the matched difference is an \emph{exact} tie: every one of the 8 matched cells reads $0.000$ in both arms, so the paired
+difference has zero variance and a conventional equivalence test is undefined rather than passed; what
+bounds it is saturation, not statistics. On the two matched measures that are \emph{not} saturated, a
+two-one-sided-tests procedure does establish equivalence at a $\pm0.05$ tolerance (readout direction cosine,
+mean difference $+0.021$, $p = 0.034$; rival entropy, mean difference $-0.003$, $p < 10^{-6}$). On the
+off-position readout it does \textbf{not}, for the reason given in App.~\ref{app:apparent}. We prefer reporting
+this unevenly to reporting a single tolerance that would be true of some measures and false of others.
+\section{Supplementary figures}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.86\textwidth]{fig_action_identity.png}
+\caption{\textbf{The identity is forced.} The measured ally-fit \emph{action} probe (dashed) lies exactly
+on $1 - {}$(ally-fit \emph{truth} probe) (thick grey) at every layer, because on ally data the two label
+vectors are identical and the two ``probes'' are one fit scored against opposite labels. Maximum deviation
+over all 751 (cell, layer) pairs: $2.2\times10^{-16}$.}
+\label{fig:identity}
+\end{figure}
+
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{fig_cross_family.png}
+% TITLE SCOPE.  This said "Inversion tracks how reliably an arm lies", which contradicted \S\ref{sec:ident}
+% ("not predicted by any behavioural variable we measured") and App.~\ref{app:negatives}, where an arm at
+% deception 1.000 does not invert.  Retitled to the null this figure actually establishes; the rate
+% relation is now stated as holding WITHIN this grid, with the counterexample cross-referenced.
+\caption{\textbf{Being reward-trained is not what produces the inversion.}
+The behaviourally-matched null of App.~\ref{app:apparent}. One row per model family; within a row the
+\textcolor[HTML]{c1121f}{red square} is the reward-trained (emergent) arm and the
+\textcolor[HTML]{0353a4}{blue circle} the instructed arm, dodged vertically so families where both
+sit at exactly the same AUROC still show two markers. Horizontal position is final-layer truth AUROC on
+held-out rival trials, so the dashed line at $0.5$ is chance and everything left of it is inverted. Markers
+are the mean over 3 seeds with $\pm 1$ SD error bars, and the number beside each marker is that
+arm's \emph{measured rival lie rate}, not its AUROC. Rows are ordered by the instructed arm's lie rate, the
+variable a rate-based account would make the operative one. Read it as follows: every emergent
+arm lies on $1.000$ of rival trials and every one reads $0.000$; the three instructed arms that also lie on
+$1.000$ (Gemma-9B, Qwen-32B, Qwen-14B) read $0.000$ \emph{too}, while the instructed arms that lie less
+reliably read well above chance. So how the deception was induced does not predict the
+readout. \emph{Within this grid} the inverted arms are also the saturated ones, but that
+relation does not hold generally, and we do not assert it: an arm at rival deception $1.000$ that never
+inverts is reported in App.~\ref{app:negatives}. This is
+a null with tight bounds rather than demonstrated equivalence, and the error bars are $0$ in every saturated
+cell because those readouts sit at an extreme where the measurement is exact.}
+\label{fig:crossfam}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{fig_predictors.png}
+\caption{Neither lie rate (a) nor per-example confidence (b) orders the readout: cells with the same
+behaviour sit at both $0.00$ and $1.00$. Both were hypotheses of ours, and both are refuted
+(App.~\ref{app:negatives}).}
+\label{fig:predictors}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{fig_suppression.png}
+\caption{Suppression, not belief drift: one RL trajectory, 41 checkpoints. Mid-stack decodability stays
+pinned while the final-layer readout collapses and inverts.}
+\label{fig:suppress}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{fig_d2_ladder.png}
+\caption{The directive-strength ladder moves the refit probe, not the frozen one.}
+\label{fig:ladder}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{fig_matched_pairs.png}
+\caption{\textbf{Behaviour-matched prompt pairs: refitting splits them, one frozen direction does not.}
+Every pair of the 15 ladder rungs (the reference plus 14 variants) whose rival deception rates agree to within $0.05$, each drawn as a
+segment joining the two members' rival truth AUROCs, ranked by gap. Left: a probe refit on each variant's own ally data, median gap $0.335$, largest $0.919$, and four pairs straddle chance.
+Right: one direction fit once on the reference variant and cross-scored, median gap $0.025$, largest $0.124$. Two pairs contain the reference variant itself, which has no frozen score by
+construction, so the right panel has 10 pairs to the left panel's 12. Pairs are enumerated under a stated
+tolerance, not selected on the size of their gap.}
+\label{fig:matchedpairs}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.82\textwidth]{fig_depth_step.png}
+\caption{\textbf{The depth step.} Truth AUROC of the identified (mixed-fit) probe on held-out rival trials,
+Gemma-9B. When the prompt \emph{states} the bit (red) it is linearly readable almost immediately and reaches $1.000$ by layer 4: reading it is a lexical operation. When the model must \emph{derive} the bit (blue,
+$N{=}2000$; faint dashed is the $N{=}1000$ replicate) the same protocol sits at chance through layer 16 and
+only then rises, reaching $1.000$ by layer 24. The contrast is what licenses treating the deep readout as a
+computed quantity rather than a copy of the prompt (\S\ref{sec:limits}).}
+\label{fig:depthstep}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{fig_freeze_transfer.png}
+\caption{\textbf{Refitting certifies almost nothing about transfer.} Each panel scores the inferred-bit task.
+Red: a probe \emph{refit} on that task, the conventional practice; it reads ${\approx}1.000$ from layer 20 in all three arms. Blue: the \emph{same} direction fit on the stated-bit task and merely cross-scored. It
+never exceeds $0.864$ on the instructed arm, and on the reward-trained arm it inverts to $0.282$.
+A refit number and a frozen number answer different questions, and only the frozen one bears on transfer.}
+\label{fig:freeze}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{fig_causal.png}
+\caption{\textbf{The criticized ally-fit direction is the causally potent one.} Left and centre: steering at
+layer 32, swept \emph{through zero} against a single in-run $\alpha{=}0$ baseline. Solid lines are the
+true-bit-$1$ rate, dashed the true-bit-$0$ rate. The mixed-fit direction (blue, the identified one) responds
+weakly, $0.365 \to 0.524$ before degrading at the largest dose; the ally-fit direction (red, the one we
+criticize) swings $0.167 \to 0.929$, and on the saturated arm breaks a floor the mixed-fit direction never
+moves. True-bit-$0$ stays pinned at $0.000$ almost everywhere, lifting only under
+the strongest negative ally-fit push: this is a token-preference axis, not a truth lever. Right: the
+pre-registered positive control. Post-ablation decodability must fall \emph{below} the ceiling ($0.600$) for
+a behavioural null to be interpretable; red bars fail and are void. Both determined ladders are now
+complete, and no cell at either layer falls below its own permutation null (black dashes). Ranks 2 and 4 at
+layer 32 clear the $0.600$ tolerance by $0.0004$ and $0.009$, but sit $0.020$ and $0.015$ \emph{above} the
+calibrated null, and $k{=}8$ ($0.608$) fails both, so the two clearing cells are a middle band bounded by
+void cells at $k{=}1$ and $k{=}8$. The contrast with layer 24 is one of degree
+($0.59$--$0.61$ versus $0.91$--$1.00$), not of pass versus fail.}
+\label{fig:causal}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{fig_depth_sweep.png}
+\caption{\textbf{The ally-fit advantage appears only where the two fitted directions differ, and separation alone is not enough.} Each panel is the same causal contrast run at one depth on the Gemma-2-9B
+instructed arm: true-bit-$1$ rate against dose, mixed-fit direction in blue, the criticized ally-fit
+direction in red, grey dashed line the in-run $\alpha{=}0$ baseline. At layers 8 and 16, where
+$\cos \geq 0.986$, the two curves lie on top of each other: the directions are nearly one vector
+and are causally interchangeable. At layers 24 and 32 they separate, and it is the ally-fit direction that
+carries the behaviour ($0.16 \to 0.93$ at layer 32 while the mixed-fit direction moves $0.36 \to 0.52$). At
+layer 24 both saturate to $1.000$ at the largest doses, so the apparent tie there is saturation rather than
+equivalence. Layer 40 is the informative exception: it has the lowest cosine we measure yet both
+arms are flat, so direction separation is \emph{necessary but not sufficient}: with two layers of downstream computation left there is nothing for a perturbation to act through. Bottom right: the geometry
+the five panels are keyed to, with the swept layers circled. \emph{We plot both dose--response curves rather
+than their ratio}: at small doses the mixed-fit displacement is a noise-level denominator and at
+large doses both arms saturate, so a ratio is undefined at one end and $1$ by construction at the other.
+Note the horizontal scales differ by panel: the median residual norm grows from $83$ at layer 8 to $860$
+at layer 40, so a fixed $\alpha$ grid spans a much wider $\alpha/\|\mathrm{resid}\|$ range shallow, and the
+outermost shallow doses are representation damage rather than dose--response.}
+\label{fig:depthsweep}
+\end{figure}
+
+
+% CHECKLIST.  Official checklist.tex from the NeurIPS 2026 template zip, instruction block deleted as that
+% block itself directs, questions and guidelines kept verbatim, answers given via the provided macros only.
+% Position is deliberate: content -> references -> appendix -> checklist, per both the template ("should
+% follow the references and follow the (optional) supplemental material") and the main-track handbook.
+% It does NOT count toward the 9pp budget, and build.sh anchors the main-text count above the bibliography
+% so adding it cannot move that number.
+% FLUSH PENDING FLOATS FIRST. The supplementary-figures section declares 11 figures back to back;
+% LaTeX defers them and, without this, Figures 5-15 float PAST this \input and land interleaved
+% with the checklist Q&A (verified: all 11 did). Floats only ever move forward, so the only fix is
+% a page break here. Re-check figure pages in main.aux after touching the appendix.
+\clearpage
+\input{checklist.tex}
+
+\end{document}

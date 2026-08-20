@@ -1,0 +1,37 @@
+# python
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+.env
+
+# macOS
+.DS_Store
+
+# editor / agent workspace
+.claude/
+
+# model weights and adapters are NOT part of this release (see README)
+adapters/
+checkpoints/
+*.bin
+*.safetensors
+
+# LaTeX build products. paper/main.pdf IS tracked; these are not.
+paper/*.aux
+paper/*.log
+paper/*.blg
+paper/*.bbl
+paper/*.out
+paper/*.fls
+paper/*.fdb_latexmk
+
+# Run outputs written by the CLIs in src/perfect_aliasing. The consolidated results file that the figures
+# are rendered from is NOT one of these and is tracked deliberately:
+#   experiments/002-generalization-dynamics/data/e3_consolidated.json
+# Do NOT replace this with a blanket "*.json" ignore. That is what a sibling repo of ours does, and
+# here it would silently drop the one file that makes every plotted number re-derivable without a
+# GPU, breaking a claim the paper makes, with nothing erroring.
+experiments/*/data/*.json
+!experiments/002-generalization-dynamics/data/e3_consolidated.json
