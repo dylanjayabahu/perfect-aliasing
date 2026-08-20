@@ -1,0 +1,5 @@
+# CPU-only figure rendering and assertions against the aggregate results.
+# These are the versions used to verify this artifact, not a recovered training environment.
+numpy==2.5.3
+matplotlib==3.11.1
+pytest==9.1.1

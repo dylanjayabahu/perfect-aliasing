@@ -1,0 +1,31 @@
+cff-version: 1.2.0
+message: "If you use this software or its results, please cite the manuscript below."
+title: "Perfect Aliasing in Compliant-Context Truth Probes"
+abstract: >
+  Compliant fitting labels cannot distinguish truth from task-prescribed action.
+  Their rival AUROCs obey a complementary-label identity across 751 cell-layer
+  pairs. Randomized codebooks and mixed-context fitting demonstrate linear
+  recoverability in controlled tasks, with a larger fitting budget and labelled
+  rival contexts. These results do not establish causal use or functional belief.
+type: software
+authors:
+  - family-names: "Jayabahu"
+    given-names: "Dylan"
+    affiliation: "University of Waterloo"
+repository-code: "https://github.com/dylanjayabahu/perfect-aliasing"
+license: MIT
+keywords:
+  - interpretability
+  - linear-probes
+  - identification
+  - reinforcement-learning
+preferred-citation:
+  type: unpublished
+  title: "The Truth Was Never Gone: Perfect Aliasing in Compliant-Context Truth Probes"
+  authors:
+    - family-names: "Jayabahu"
+      given-names: "Dylan"
+      affiliation: "University of Waterloo"
+  year: 2026
+  notes: "Preprint; submitted to the NeurIPS 2026 Interpretability as a Science workshop, under review."
+  url: "https://github.com/dylanjayabahu/perfect-aliasing/blob/main/paper/main.pdf"

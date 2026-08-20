@@ -1,0 +1,9 @@
+# Full model work; analysis alone only needs requirements-analysis.txt.
+# Historical dependencies and model revisions were incompletely pinned.
+# This file is not an exact historical environment lock.
+-r requirements-analysis.txt
+transformers==4.48.3
+torch
+peft
+accelerate
+scikit-learn
