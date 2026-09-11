@@ -1,8 +1,8 @@
 # Perfect Aliasing in Compliant-Context Truth Probes
 
-Code, aggregate results and [paper](paper/main.pdf) for *The Truth Was Never Gone: Perfect Aliasing in Compliant-Context Truth Probes*, by Dylan Jayabahu (University of Waterloo).
+Code, aggregate results and [paper](https://arxiv.org/abs/2609.10739) for *The Truth Was Never Gone: Perfect Aliasing in Compliant-Context Truth Probes*, by Dylan Jayabahu (University of Waterloo). A [repository copy of the PDF](paper/main.pdf) and its [TeX source](paper/main.tex) are also available.
 
-**Status:** submitted to the NeurIPS 2026 Interpretability as a Science workshop; under review, not accepted. The manuscript here is a corrected preprint of the same work. It has not yet been submitted to arXiv. The anonymous workshop submission is preserved separately.
+**Status:** available as [arXiv:2609.10739](https://arxiv.org/abs/2609.10739), submitted September 9, 2026. This is an arXiv preprint; the NeurIPS 2026 Interpretability as a Science workshop submission remains under review, not accepted. The manuscript here is a corrected preprint of the same work. The anonymous workshop submission is preserved separately.
 
 ## What the paper shows
 
@@ -81,6 +81,6 @@ pdflatex -no-shell-escape -halt-on-error main.tex
 pdflatex -no-shell-escape -halt-on-error main.tex
 ```
 
-The included PDF has 36 pages and 15 figures. [CITATION.cff](CITATION.cff) supplies citation metadata for the manuscript without claiming workshop acceptance or an arXiv identifier.
+The included PDF has 36 pages and 15 figures. [CITATION.cff](CITATION.cff) supplies citation metadata for the arXiv preprint; the arXiv posting does not imply workshop acceptance.
 
 Code is MIT-licensed; see [LICENSE](LICENSE). The manuscript and its figures are licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
