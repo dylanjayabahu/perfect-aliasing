@@ -2,7 +2,7 @@
 
 Code, aggregate results and [paper](https://arxiv.org/abs/2609.10739) for *The Truth Was Never Gone: Perfect Aliasing in Compliant-Context Truth Probes*, by Dylan Jayabahu (University of Waterloo). A [repository copy of the PDF](paper/main.pdf) and its [TeX source](paper/main.tex) are also available.
 
-**Status:** available as [arXiv:2609.10739](https://arxiv.org/abs/2609.10739), submitted September 9, 2026. This is an arXiv preprint; the NeurIPS 2026 Interpretability as a Science workshop submission remains under review, not accepted. The manuscript here is a corrected preprint of the same work. The anonymous workshop submission is preserved separately.
+**Status:** available as [arXiv:2609.10739](https://arxiv.org/abs/2609.10739), submitted September 9, 2026. This is a sole-authored arXiv preprint. The manuscript here is a corrected preprint of the same work.
 
 ## What the paper shows
 
