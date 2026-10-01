@@ -36,10 +36,9 @@ if PAPER:
     FIG.mkdir(parents=True, exist_ok=True)
 
 # Fixed categorical hues, assigned in fixed order and never cycled.
-# The semantic pairing is deliberate and consistent with Exp-001: WARM = the conventional/broken thing,
-# COOL = the corrected thing.
-ALLY = "#c1121f"        # probe trained on ALLY contexts only — the conventional, unidentified protocol
-MIXED = "#0353a4"       # probe trained on MIXED ally+rival contexts — the identified protocol (the fix)
+# The semantic pairing is deliberate and consistent with Exp-001: WARM = ally-fit, COOL = mixed-fit.
+ALLY = "#c1121f"        # probe trained on ALLY contexts only (ally-fit)
+MIXED = "#0353a4"       # probe trained on MIXED ally+rival contexts (mixed-fit)
 THIRD = "#1baf7a"       # mid-stack / control series (always direct-labeled: contrast WARN relief)
 INK, INK2, MUTED = "#0b0b0b", "#52514e", "#8a8984"
 GRID = dict(alpha=0.25, linewidth=0.6)
@@ -97,7 +96,7 @@ _DASHES = []
 
 
 def _check_dashes(fig, name):
-    """The paper is zero-em-dash (user decision 2026-08-19), and figure text is typeset in the paper
+    """The paper is zero-em-dash, and figure text is typeset in the paper
     just like prose is. Grepping this module for the character does not work: most hits are comments,
     and a rendered string can be built by an f-string. So inspect the actual Text artists instead --
     that catches titles, annotations, tick labels and legend entries however they were set."""
@@ -178,8 +177,8 @@ def _chance(ax):
 
 
 # --- F1 (spine): the identification result, per layer ----------------------------------------------
-# THE headline figure. Same activations, same layer, two probes that differ ONLY in which contexts they
-# were fit on. The ally-trained probe collapses/inverts; the mixed-trained probe reads 1.000 everywhere.
+# THE headline figure. Same activations and layer; the fitting contexts and the number of fitting examples
+# differ. Every displayed cell reaches mixed-fit AUROC 1.000 at the final layer.
 CELL_TITLES = {
     # cells trained on the plain game, evaluated on the codebook task (deception does not fully transfer)
     "e2id_gemma-9b_in": "Gemma-2-9B · instructed",
@@ -214,8 +213,8 @@ PAPER_TITLES = {
     "cbid_8b_em": "Llama-8B · codebook, unsat.",
     "cbid_mistral-7b_em": "Mistral-7B · codebook, unsat.",
 }
-# Order: the saturated codebook-trained EMERGENT cells first — those are what the claim now rests on —
-# then the saturated instructed cells, then the unsaturated cells that act as within-model controls.
+# Display order: two saturated reward-trained codebook cells, two constant-answer controls, two instructed
+# cells, then reward-trained adapters evaluated on codebooks.
 CELL_ORDER = ["cbid_gemma-9b_em", "cbid_8b_hi_em", "cbid_8b_em", "cbid_mistral-7b_em",
               "e2id_gemma-9b_in", "e2id_qwen-14b_in", "e2id_gemma-9b_em", "e2id_qwen-14b_em",
               "e2id_8b_em", "e2id_8b_in"]
@@ -321,9 +320,9 @@ def fig_identification(fd):
         mixed = [r.get("truth_mixed") for r in curve]
         _chance(ax)
         ax.plot(xs, mixed, color=MIXED, linewidth=2.0, zorder=4,
-                label="truth probe, fit on ally+rival (identified)")
+                label="truth probe, mixed-fit (ally+rival)")
         ax.plot(xs, ally, color=ALLY, linewidth=2.0, zorder=3,
-                label="truth probe, fit on ally only (conventional)")
+                label="truth probe, ally-fit (ally only)")
         decep = ((cell.get("behavior") or {}).get("rival_deception_rate"))
         sub = f"rival deception {decep:.3f}" if isinstance(decep, (int, float)) else ""
         title = (PAPER_TITLES.get(key) or CELL_TITLES.get(key, key)) if PAPER \
@@ -385,7 +384,7 @@ def fig_identification(fd):
     if not PAPER:
         # in the paper the equivalent sentence is the LaTeX caption, so the baked-in title would double it
         fig.suptitle("Same activations, same layer: the ally-trained “truth” probe inverts while an "
-                     "identified probe reads 1.000",
+                     "mixed-fit probe reads 1.000",
                      fontsize=12.5, fontweight="bold", color=INK, y=1.0)
     fig.tight_layout(rect=(0, 0.045, 1, 1.0 if PAPER else 0.98))
     _note_gutter(used, notes)
@@ -663,11 +662,12 @@ def fig_refit_artifact(d2data):
     """The D2 wave's actual result: the apparent prompt-driven inversion is a REFIT artifact.
 
     Every point is one system-prompt variant of the SAME model (identical weights). x = the arm's measured
-    lie rate. Red = a probe refit on that variant's own ally activations (the conventional protocol).
+    lie rate. Red = a probe refit on that variant's own ally activations (ally-fit).
     Blue = ONE probe direction, fit once on the `default` variant, cross-scored on every variant.
 
-    Both probes score ally IID ~1.000 everywhere, so by the conventional criterion both are valid truth
-    probes — yet they disagree by up to 0.9 on rival trials. That is probe under-determination shown
+    Every refitted probe scores ally IID 1.000; the frozen probe ranges from 0.792 to 1.000 across the 14
+    variants it scores. On the highlighted variant both validations are 1.000, yet the rival AUROCs are
+    0.080 and 0.986, and across variants the two probes disagree by up to 0.9 on rival trials. That is probe under-determination shown
     without any training and without the codebook."""
     d2 = (d2data or {}).get("d2") or {}
     pts = [v for v in d2.values()
@@ -692,7 +692,7 @@ def fig_refit_artifact(d2data):
     ax.scatter(xs, frozen, s=64, marker="o", color=MIXED, edgecolor="white", linewidth=1.1, zorder=5,
                label="one fixed probe, cross-scored on every variant")
     ax.scatter(xs, refit, s=64, marker="s", color=ALLY, edgecolor="white", linewidth=1.1, zorder=4,
-               label="probe refit on each variant's own ally data (conventional)")
+               label="probe refit on each variant's own ally data")
     worst = max(pts, key=lambda v: abs(v["auroc_frozen"] - v["auroc"]))
     # Anchored in AXES FRACTION, not as an offset from the point. An offset put the text off the right
     # edge, which (a) buried it under two red markers and (b) made bbox_inches="tight" widen the canvas
@@ -739,7 +739,7 @@ def fig_d2(d2data):
         ys = [by[LADDER[j]]["auroc"] for j in xs]
         ax.plot(xs, ys, color=ALLY, linewidth=2.0, marker="o", markersize=7,
                 markeredgecolor="white", markeredgewidth=1.0, zorder=4,
-                label="probe refit per rung (conventional)")
+                label="probe refit per rung")
         # The same ladder read by ONE fixed probe. Without this series the figure asserts a prompt-driven
         # inversion that the frozen-probe wave showed is a refit artifact.
         fz = [(j, by[LADDER[j]].get("auroc_frozen")) for j in xs]
@@ -1057,7 +1057,7 @@ def fig_settling(fd):
         ax.plot(xs, [refit[l] for l in xs if l in refit] if set(refit) >= set(xs)
                 else [refit.get(l) for l in xs],
                 color=ALLY, lw=1.3, linestyle=(0, (1.5, 1.5)), zorder=3,
-                label="refit on the held-out task (conventional)")
+                label="refit on the held-out task")
         ax.plot(xs, [ctl[l] for l in xs], color=MIXED, lw=1.4, linestyle=(0, (4, 2.5)), zorder=4,
                 label="same probe, frozen, SAME task (control)")
         ax.plot(xs, [froz[l] for l in xs], color=MIXED, lw=2.2, marker="o", ms=3.4, zorder=5,
@@ -1128,8 +1128,8 @@ def fig_causal(fd):
         base = ((iv[mkey].get("steering_baseline") or {}).get("rival_truth_rate"))
         # Plot the TRUE-BIT-1 subpopulation, not the pooled rate: pooling is what hid the effect before,
         # because true-bit-0 is pinned at 0.000 and dilutes everything by half.
-        for key, col, mk, lb in ((mkey, MIXED, "o", "mixed-fit (identified)"),
-                                 (akey, ALLY, "s", "ally-fit (the criticised one)")):
+        for key, col, mk, lb in ((mkey, MIXED, "o", "mixed-fit"),
+                                 (akey, ALLY, "s", "ally-fit")):
             rows = sorted(iv[key]["steering_sweep"]["rates"], key=lambda r: r["alpha"])
             x = [r["alpha_rel"] for r in rows]
             y = [(r.get("by_truth") or {}).get("truth1_rate") for r in rows]
@@ -1269,7 +1269,7 @@ def fig_causal(fd):
                 Patch(facecolor=MIXED, label="below tolerance; see null")]
         if cc:
             keys.append(Line2D([], [], color=MIXED, lw=1.4, linestyle=(0, (4, 3)),
-                               label=f"chance ceiling {max(cc):.2f}"))
+                               label=f"tolerance {max(cc):.2f}"))
         if any(q is not None for q in perm):
             keys.append(Line2D([], [], color=INK, lw=0, marker="_", ms=11, mew=1.6,
                                label="permutation null (q95)"))
@@ -1319,27 +1319,22 @@ def fig_causal(fd):
 
 
 # --- F10 (5b-iv): the field's instruction-pair protocol beside ours, with the 1-x identity ----------
-# Left: run faithfully, the field's construction reads the DIRECTIVE at ~1.000 while the identification
-# split it would need is UNAVAILABLE BY CONSTRUCTION (is_lying is constant, so it has one class) and truth
-# sits at chance. Right: the forced identity action = 1 - truth on ally data, verified over every
-# (cell, layer) pair in the blob — a proof, not a correlation.
+# Left: the instruction-pair construction on our task. Directive AUROC is 0.989-1.000 on the row-level
+# split and 0.66-0.95 with episodes and wordings held out; the row-split score is near chance against the
+# secret bit, and lying-label AUROC is undefined because that label has one class. Right: the
+# complementary-label identity, evaluated on rival trials using ally-fit probes, over every (cell, layer)
+# pair in the results file.
 def fig_depth_sweep(fd):
     """§sec:depth — the ally-fit advantage appears only where the two fitted directions differ.
 
-    ⚠️ THIS FIGURE DELIBERATELY PLOTS NO RATIO. The section's table quotes an ally/mixed "potency ratio",
-    and a ratio here is a trap this project has already fallen into twice: error #21 (a ratio whose
-    denominator was 2 trials of opposite sign) and the WAVE-11 self-catch (a monotone-looking depth curve
-    that was an artifact of picking one dose per layer). At small doses the mixed-fit displacement is a
-    noise-level quantity and at large doses both arms saturate, so the ratio is undefined at one end and
-    1.00-by-construction at the other. Plotting BOTH dose-response curves shows the same claim -- curves on
-    top of each other shallow, ally-fit steeper at depth, both flat at layer 40 -- while letting a reader
-    see the denominator that a ratio would hide.
-    ⚠️ Recomputing the section's published ranges from this blob does NOT reproduce them under any power
-    floor tried; that discrepancy is about the TABLE, and is one more reason this
-    figure is built from the curves instead."""
+    Plots the paired dose-response curves and direction cosines of Appendix K.3. The curves nearly
+    coincide at layers 8 and 16, show an ally-fit advantage at layers 24 and 32, and move little at layer
+    40. No ratio is plotted: at small doses the mixed-fit displacement is noise-level or oppositely
+    signed, so a ratio is unstable, and where both arms saturate at large doses (layer 24) it is 1 by
+    construction. The curves show the denominator that a ratio would hide."""
     iv = fd.get("interventions") or {}
     geo = ((fd.get("allygeom") or {}).get("geo_cb_g9b_in.json") or {}).get("cos_ally_vs_mixed") or {}
-    # (layer, mixed/identified arm, ally-fit arm). L8/16/40 are the dsweep wave; L24/L32 predate it and
+    # (layer, mixed-fit arm, ally-fit arm). L8/16/40 are the dsweep wave; L24/L32 predate it and
     # live under their own names, which is exactly why this must be an explicit map and not a glob.
     PAIRS = [(8, "dsweep_revsteer_g9b_in_l8", "dsweep_allyfit_g9b_in_l8"),
              (16, "dsweep_revsteer_g9b_in_l16", "dsweep_allyfit_g9b_in_l16"),
@@ -1365,7 +1360,7 @@ def fig_depth_sweep(fd):
     fig, axes = plt.subplots(2, 3, figsize=_size(11.0, 6.4))
     axes = axes.ravel()
     for ax, (L, mk, ak) in zip(axes, have):
-        for key, col, mk_, lab in ((mk, MIXED, "o", "mixed-fit (identified)"),
+        for key, col, mk_, lab in ((mk, MIXED, "o", "mixed-fit"),
                                    (ak, ALLY, "s", "ally-fit (criticised)")):
             base, pts = curve(key)
             if not pts:
@@ -1414,6 +1409,8 @@ def fig_instrpair(fd):
         dirv = [((r.get("directive") or {}).get("directive_auroc")) for r in c["layers"]]
         trv = [((r.get("directive") or {}).get("truth_auroc")) for r in c["layers"]]
         ax.plot(ls, dirv, color=ALLY, lw=2, marker="o", ms=3.5, label="directive (what it reads)", zorder=3)
+        grp = [((r.get("directive__grouped") or {}).get("directive_auroc")) for r in c["layers"]]
+        ax.plot(ls, grp, color=ALLY, lw=1.6, ls="--", marker="o", ms=3.2, mfc="white", label="directive, twins held out", zorder=3)
         ax.plot(ls, trv, color=MIXED, lw=2, marker="s", ms=3.5, label="truth (what it claims)", zorder=3)
         _chance(ax)
         # The is_lying series CANNOT be plotted — say so on the axes rather than leaving a silent gap.
@@ -1421,12 +1418,12 @@ def fig_instrpair(fd):
         if c["layers"] and (c["layers"][0].get("directive") or {}).get("split_unavailable_by_construction"):
             # Plain text, NOT LaTeX: matplotlib is not in usetex mode here, so a backslash-escaped
             # underscore renders as a literal "is\_lying" on the canvas.
-            ax.annotate(f"is_lying: UNAVAILABLE\nBY CONSTRUCTION\n({nclass} class)",
-                        xy=(0.5, 0.66), xycoords="axes fraction", ha="center",
+            ax.annotate(f"is_lying unavailable by\nconstruction ({nclass} class)",
+                        xy=(0.5, 0.04), xycoords="axes fraction", ha="center", va="bottom",
                         fontsize=NOTE_FS, color=INK, fontweight="bold")
         # Headroom at the bottom so the legend does not sit on the truth curve at ~0.50.
         ax.set_ylim(0.28, 1.05)
-        _style(ax, title=f"field protocol, {lab}", xlabel="layer")
+        _style(ax, title=f"instruction-pair, {lab}", xlabel="layer")
     axes[0].set_ylabel("AUROC", fontsize=6.5 if PAPER else 9.5, color=INK2)
     axes[0].legend(fontsize=LEG_FS, frameon=False, loc="lower left")
 
@@ -1438,7 +1435,7 @@ def fig_instrpair(fd):
     # and the generic glob in the e3 analysis job correctly picks all of them up. But an exact re-write of a
     # cell is NOT an independent verification of the identity, and this panel's annotation is a COVERAGE
     # claim that the paper quotes. Counting a duplicated cell twice would inflate that denominator --
-    # the error #21 pattern (a ratio whose denominator was never inspected) in a count rather than a ratio.
+    # a denominator error in a count rather than a ratio.
     # Signature = the full curve plus the behaviour block: identical signature => same measurement.
     _seen = set()
     _dropped = []
@@ -1474,7 +1471,7 @@ def fig_instrpair(fd):
         _style(ax, title="rival-label identity (ally fit)", xlabel="truth AUROC", ylabel="action AUROC")
     else:
         ax.axis("off")
-    _suptitle(fig, "The field's protocol reads the directive, not truth")
+    _suptitle(fig, "The instruction-pair construction reads the directive, not truth")
     _save(fig, "fig_instrpair.png")
 
 
@@ -1615,7 +1612,7 @@ def fig_geom(fd):
 #
 # ⛔ THIS FIGURE DELIBERATELY DOES NOT USE THE BLOB'S `d2_matched_pairs` LIST. That list is the top 6
 # pairs SORTED DESCENDING BY AUROC GAP -- a selection on the very outcome being reported. Quoting its
-# range ("gaps of 0.31-0.54") would be error #21's shape: a statistic computed over cases chosen for
+# range ("gaps of 0.31-0.54") would report a statistic computed over cases chosen for
 # being extreme. Instead every pair under a STATED deception tolerance is enumerated from `d2` here, so
 # the spread shown is the spread over all matched pairs and the selection rule is visible in the code.
 MATCH_TOL = 0.05          # |difference in rival deception rate| that counts as behaviour-matched

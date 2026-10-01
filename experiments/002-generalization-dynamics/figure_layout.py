@@ -104,7 +104,7 @@ def refine(fig, name, rect):
         return rect
     if name == 'fig_instrpair.png':
         fig.set_size_inches(5.5, 2.65)
-        bottom_legend(fig, axes[0], labels=['directive label', 'truth label'])
+        bottom_legend(fig, axes[0], ncol=3, labels=['directive, row-level split', 'directive, episodes + wordings held out', 'same score vs secret bit (row split)'])
         for text in axes[2].texts:
             if text.get_text().startswith('action $= 1-$truth'):
                 # Three compact lines stay inside the triangle above the identity.
@@ -150,7 +150,7 @@ def refine(fig, name, rect):
         return rect
     if name == 'fig_depth_sweep.png':
         fig.set_size_inches(5.5, 3.85)
-        bottom_legend(fig, axes[0], labels=['mixed-fit (identified)', 'ally-fit'])
+        bottom_legend(fig, axes[0], labels=['mixed-fit', 'ally-fit'])
         axes[-1].set_title('geometry: direction cosine', fontsize=7.0, fontweight='bold')
         return (0, 0.09, 1, 1)
     return rect

@@ -50,7 +50,7 @@ python src/perfect_aliasing/train_rl.py --model-id gemma-9b --task codebook --se
     --out adapters/rl_deceiver_gemma-9b
 ```
 
-Recipe variants reported in the paper's Table 1 differ only in the flags added here:
+Recipe variants reported in the paper's Table 2 differ only in the flags added here:
 
 ```bash
 # entropy bonus with an EMA baseline

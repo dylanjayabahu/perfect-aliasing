@@ -12,9 +12,9 @@ from conftest import final_layer
 # The headline arm: one model, one recipe, three training seeds. The contrast is the whole paper.
 HEADLINE_SEEDS = ["cbid_gemma-9b_em", "cbid_gemma-9b_em_s1", "cbid_gemma-9b_em_s2"]
 
-# Rows of the paper's Table 1, keyed by the cell that produced them:
+# Rows of the paper's Table 2, keyed by the cell that produced them:
 #   cell -> (rival deception rate, conventional ally-fit AUROC, identified mixed-fit AUROC)
-TABLE_1 = {
+TABLE_2 = {
     "cbid_gemma-9b_ent_em": (1.000, 0.000, 1.000),   # entropy bonus + EMA baseline
     "cbid_8b_hi_em":        (1.000, 0.056, 1.000),   # larger step size / batch
     "cbid_8b_em":           (0.465, 0.815, 1.000),   # non-inverting control
@@ -22,9 +22,9 @@ TABLE_1 = {
     "e2id_qwen-14b_in":     (0.937, 0.019, 1.000),   # instructed arm
     "e2id_gemma-9b_in":     (0.797, 0.015, 1.000),   # instructed arm
     "e2id_gemma-9b_em":     (0.937, 0.165, 1.000),   # emergent adapter, not codebook-trained
-    # Added after a release audit found Table 1 printing 0.024 for the row below where the
+    # Added after a release audit found the table printing 0.024 for the row below where the
     # results file says 0.023454. The row had no test, which is why a hardcoded digit could
-    # drift from the data unnoticed. Every Table 1 row is now asserted.
+    # drift from the data unnoticed. Every row is now asserted.
     "symid_gemma-9b_em":    (1.000, 0.000, 1.000),   # basin-corrected reward table
     "symid_qwen-14b_em":    (0.996, 0.023, 1.000),   # basin-corrected reward table
 }
@@ -51,8 +51,8 @@ def test_headline_contrast_across_seeds(identification):
     )
 
 
-@pytest.mark.parametrize("cell_key,expected", sorted(TABLE_1.items()))
-def test_table_1_rows(identification, cell_key, expected):
+@pytest.mark.parametrize("cell_key,expected", sorted(TABLE_2.items()))
+def test_table_2_rows(identification, cell_key, expected):
     deception, ally, mixed = expected
     cell = identification[cell_key]
     assert cell["behavior"]["rival_deception_rate"] == pytest.approx(deception, abs=5e-4)

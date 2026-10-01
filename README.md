@@ -2,7 +2,7 @@
 
 Code, aggregate results and [paper](https://arxiv.org/abs/2609.10739) for *The Truth Was Never Gone: Perfect Aliasing in Compliant-Context Truth Probes*, by Dylan Jayabahu (University of Waterloo). A [repository copy of the PDF](paper/main.pdf) and its [TeX source](paper/main.tex) are also available.
 
-**Status:** available as [arXiv:2609.10739](https://arxiv.org/abs/2609.10739), submitted September 9, 2026. This is a sole-authored arXiv preprint. The manuscript here is a corrected preprint of the same work.
+**Status:** available as [arXiv:2609.10739](https://arxiv.org/abs/2609.10739), submitted September 9, 2026. This is a sole-authored arXiv preprint. This repository contains the manuscript of arXiv v2, which corrects and clarifies v1.
 
 ## What the paper shows
 
@@ -21,7 +21,7 @@ Randomized codebooks separate the prescribed output symbol from semantic action.
 | Measurement | Result across three training seeds |
 |---|---|
 | Rival deception rate | 1.000 on evaluated trials |
-| Conventional ally-fit truth AUROC | 0.006 +/- 0.005 |
+| Ally-fit truth AUROC | 0.006 +/- 0.005 |
 | Mixed-fit truth AUROC | 1.000 in each saved final-layer result |
 
 These probes score the same held-out rival activations. Mixed fitting uses approximately twice as many fitting examples and access to labelled rival contexts, so this is a constructive demonstration of linear recoverability, not an equal-budget comparison. Finite-sample extrema do not imply population certainty.
@@ -43,7 +43,7 @@ python -m pip install -r requirements-analysis.txt
 python reproduce/verify.py
 ```
 
-The command writes a checksum/metrics report, test and rendering logs, and all 15 regenerated paper figures to `reproduce/output/`. It refuses to overwrite an existing output directory; use `--output PATH` for another run. Checked-in paper files are unchanged. Figures come from the [consolidated results file](experiments/002-generalization-dynamics/data/e3_consolidated.json). The tests check the saved AUROC identity, Table 1 values, the three-seed summary and the frozen-versus-refit contrast. These checks validate the aggregate record; they do not rerun models, cover every sentence in the paper, or establish external generalization.
+The command writes a checksum/metrics report, test and rendering logs, and all 15 regenerated paper figures to `reproduce/output/`. It refuses to overwrite an existing output directory; use `--output PATH` for another run. Checked-in paper files are unchanged. Figures come from the [consolidated results file](experiments/002-generalization-dynamics/data/e3_consolidated.json). The tests check the saved AUROC identity, selected Table 2 values, the three-seed summary and the frozen-versus-refit contrast. These checks validate the aggregate record; they do not rerun models, cover every sentence in the paper, or establish external generalization.
 
 The dataset SHA256 is:
 
@@ -81,6 +81,6 @@ pdflatex -no-shell-escape -halt-on-error main.tex
 pdflatex -no-shell-escape -halt-on-error main.tex
 ```
 
-The included PDF has 36 pages and 15 figures. [CITATION.cff](CITATION.cff) supplies citation metadata for the arXiv preprint; the arXiv posting does not imply workshop acceptance.
+The included PDF has 41 pages and 15 figures. [CITATION.cff](CITATION.cff) supplies citation metadata for the arXiv preprint; the arXiv posting does not imply workshop acceptance.
 
 Code is MIT-licensed; see [LICENSE](LICENSE). The manuscript and its figures are licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).

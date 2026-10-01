@@ -11,7 +11,7 @@ python -m pytest tests/ -v
 | file | what it defends |
 |---|---|
 | `test_forced_identity.py` | `action/ally = 1 - truth/ally` at every layer of every cell, to floating-point tolerance, and the size of that check: 751 (cell, layer) pairs over 39 distinct full-curve records, worst deviation 2.2e-16 |
-| `test_reported_numbers.py` | the three-seed headline contrast (0.006 +/- 0.005 against 1.000 at zero seed variance), every row of Table 1, and the general form of the claim over all saturated arms |
+| `test_reported_numbers.py` | the three-seed headline contrast (0.006 +/- 0.005 against 1.000 at zero seed variance), the rival-deception and probe-AUROC values of every Table 2 row, and inversion and recovery in every saved codebook cell with N >= 1000 and rival deception >= 0.996 |
 | `test_refit_artifact.py` | refitting per condition spreads the readout across 0.080 to 1.000 while one frozen direction stays within 0.875 to 1.000, and that every refit probe is nonetheless perfect in-distribution |
 
 Two notes on how the assertions are written.
