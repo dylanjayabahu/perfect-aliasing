@@ -81,6 +81,6 @@ pdflatex -no-shell-escape -halt-on-error main.tex
 pdflatex -no-shell-escape -halt-on-error main.tex
 ```
 
-The included PDF has 41 pages and 15 figures. [CITATION.cff](CITATION.cff) supplies citation metadata for the arXiv preprint; the arXiv posting does not imply workshop acceptance.
+The included PDF has 42 pages and 15 figures. [CITATION.cff](CITATION.cff) supplies citation metadata for the arXiv preprint; the arXiv posting does not imply workshop acceptance.
 
 Code is MIT-licensed; see [LICENSE](LICENSE). The manuscript and its figures are licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
