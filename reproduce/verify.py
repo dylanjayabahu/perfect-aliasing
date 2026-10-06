@@ -73,7 +73,8 @@ def main():
     with tempfile.TemporaryDirectory(prefix='perfect-aliasing-verify-') as tmp:
         scratch = Path(tmp)
         artifact = scratch / 'artifact'
-        for rel in [DATA, EXPERIMENT / 'make_figures.py', EXPERIMENT / 'figure_layout.py']:
+        for rel in [DATA, EXPERIMENT / 'make_figures.py', EXPERIMENT / 'figure_layout.py',
+                    EXPERIMENT / 'render_schematic.py']:
             dest = artifact / rel
             dest.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(ROOT / rel, dest)
@@ -97,8 +98,8 @@ def main():
         figures = artifact / 'paper/figures'
         expected = {p.name for p in (ROOT / 'paper/figures').glob('*.png')}
         actual = {p.name for p in figures.glob('*.png')}
-        if len(expected) != 15 or actual != expected:
-            raise ValueError('Regenerated figure set differs from the 15 released figures.')
+        if len(expected) != 17 or actual != expected:
+            raise ValueError('Regenerated figure set differs from the 17 released figures.')
         report['figures'] = {name: {'sha256': sha256(figures / name),
                                    'matches_released_bytes': sha256(figures / name) == sha256(ROOT / 'paper/figures' / name)}
                              for name in sorted(actual)}
@@ -113,7 +114,7 @@ def main():
     print(f"Headline ally-fit AUROC {report['headline']['ally_fit_mean']:.3f} +/- "
           f"{report['headline']['ally_fit_sample_sd']:.3f}; mixed-fit {report['headline']['mixed_fit_auroc']}")
     matches = sum(v['matches_released_bytes'] for v in report['figures'].values())
-    print(f'15 figures regenerated; {matches}/15 byte-identical to release. Report: {output / "summary.json"}')
+    print(f'17 figures regenerated; {matches}/17 byte-identical to release. Report: {output / "summary.json"}')
 
 
 if __name__ == '__main__':

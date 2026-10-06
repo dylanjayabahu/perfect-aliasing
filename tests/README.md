@@ -1,8 +1,8 @@
 # Tests
 
 These are not smoke tests. Each one asserts a claim the paper makes, against
-`experiments/002-generalization-dynamics/data/e3_consolidated.json`, which is the same file every
-figure is rendered from. They need no GPU, no model download and no network.
+`experiments/002-generalization-dynamics/data/e3_consolidated.json`, which is the source of every
+data-driven figure (Figure 1 is a data-free schematic). They need no GPU, no model download and no network.
 
 ```bash
 python -m pytest tests/ -v

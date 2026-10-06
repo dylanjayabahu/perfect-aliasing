@@ -7,7 +7,7 @@ range, while one frozen direction cross-scored on every variant does not.
 """
 import pytest
 
-# Both figures are stated in the paper's Section 5 and its Figure 2 caption.
+# Both ranges are stated in the paper's Section 5.
 REFIT_RANGE = (0.080, 1.000)
 FROZEN_RANGE = (0.875, 1.000)
 

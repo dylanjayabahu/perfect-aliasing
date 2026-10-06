@@ -22,9 +22,8 @@ TABLE_2 = {
     "e2id_qwen-14b_in":     (0.937, 0.019, 1.000),   # instructed arm
     "e2id_gemma-9b_in":     (0.797, 0.015, 1.000),   # instructed arm
     "e2id_gemma-9b_em":     (0.937, 0.165, 1.000),   # emergent adapter, not codebook-trained
-    # Added after a release audit found the table printing 0.024 for the row below where the
-    # results file says 0.023454. The row had no test, which is why a hardcoded digit could
-    # drift from the data unnoticed. Every row is now asserted.
+    # The saved value 0.023454 rounds to 0.023; asserting every row keeps a hardcoded digit
+    # from drifting from the data unnoticed.
     "symid_gemma-9b_em":    (1.000, 0.000, 1.000),   # basin-corrected reward table
     "symid_qwen-14b_em":    (0.996, 0.023, 1.000),   # basin-corrected reward table
 }

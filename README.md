@@ -26,9 +26,9 @@ Randomized codebooks separate the prescribed output symbol from semantic action.
 
 These probes score the same held-out rival activations. Mixed fitting uses approximately twice as many fitting examples and access to labelled rival contexts, so this is a constructive demonstration of linear recoverability, not an equal-budget comparison. Finite-sample extrema do not imply population certainty.
 
-![Per-layer truth AUROC for eight measured arms, comparing ally-fit and mixed-fit probes.](paper/figures/fig_identification.png)
+![Per-layer truth AUROC for six measured arms, comparing ally-fit and mixed-fit probes.](paper/figures/fig_identification.png)
 
-*Figure 1. Red: ally-fit truth probes. Blue: mixed-fit truth probes. N=1000 denotes collected episodes; rival held-out scoring uses approximately 150 episodes. The caption in the paper explains the individual arms and scope.*
+*Figure 2 of the paper. Red: ally-fit truth probes. Blue: mixed-fit truth probes. N=1000 denotes collected episodes; rival held-out scoring uses approximately 150 episodes. The caption in the paper explains the individual arms and scope.*
 
 A separate within-model contrast shows why fitting a new probe for every condition can mislead: two compliant-fit probes, both scoring 1.000 in their respective ally validation, score 0.080 and 0.986 on the same rival activations.
 
@@ -43,7 +43,7 @@ python -m pip install -r requirements-analysis.txt
 python reproduce/verify.py
 ```
 
-The command writes a checksum/metrics report, test and rendering logs, and all 15 regenerated paper figures to `reproduce/output/`. It refuses to overwrite an existing output directory; use `--output PATH` for another run. Checked-in paper files are unchanged. Figures come from the [consolidated results file](experiments/002-generalization-dynamics/data/e3_consolidated.json). The tests check the saved AUROC identity, selected Table 2 values, the three-seed summary and the frozen-versus-refit contrast. These checks validate the aggregate record; they do not rerun models, cover every sentence in the paper, or establish external generalization.
+The command writes a checksum/metrics report, test and rendering logs, and all 17 regenerated paper figures to `reproduce/output/`. It refuses to overwrite an existing output directory; use `--output PATH` for another run. Checked-in paper files are unchanged. Figures come from the [consolidated results file](experiments/002-generalization-dynamics/data/e3_consolidated.json). The tests check the saved AUROC identity, selected Table 2 values, the three-seed summary and the frozen-versus-refit contrast. These checks validate the aggregate record; they do not rerun models, cover every sentence in the paper, or establish external generalization.
 
 The dataset SHA256 is:
 
@@ -68,7 +68,7 @@ Full model work requires the dependencies in [requirements.txt](requirements.txt
 | [experiments/001-emergent-vs-instructed/](experiments/001-emergent-vs-instructed/) | Earlier experimental code, with a scope correction and limitations |
 | [reproduce/RUNS.md](reproduce/RUNS.md) | Verification instructions, historical settings and prospective recipes |
 | [tests/](tests/) | Assertions against the saved results |
-| [paper/](paper/) | Reviewed preprint PDF, TeX, bibliography and figures |
+| [paper/](paper/) | Preprint PDF, TeX, bibliography and figures |
 
 ## Build and cite the paper
 
@@ -81,6 +81,6 @@ pdflatex -no-shell-escape -halt-on-error main.tex
 pdflatex -no-shell-escape -halt-on-error main.tex
 ```
 
-The included PDF has 42 pages and 15 figures. [CITATION.cff](CITATION.cff) supplies citation metadata for the arXiv preprint; the arXiv posting does not imply workshop acceptance.
+The included PDF has 39 pages and 17 figures. [CITATION.cff](CITATION.cff) supplies citation metadata for the arXiv preprint; the arXiv posting does not imply workshop acceptance.
 
 Code is MIT-licensed; see [LICENSE](LICENSE). The manuscript and its figures are licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).

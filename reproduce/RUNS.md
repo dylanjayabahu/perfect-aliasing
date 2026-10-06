@@ -8,7 +8,7 @@ Install [requirements-analysis.txt](../requirements-analysis.txt), then run:
 python reproduce/verify.py
 ```
 
-This verifies the data checksum and saved headline results, runs the aggregate test suite, and regenerates all 15 paper figures in `reproduce/output/`. The directory contains `summary.json`, test/render logs and `figures/`. It refuses to overwrite an existing output directory; use `--output PATH` for another run. Rendering occurs in a temporary workspace, so checked-in figures and the manuscript are not overwritten. No model loading or network access is required after installing dependencies.
+This verifies the data checksum and saved headline results, runs the aggregate test suite, and regenerates all 17 paper figures in `reproduce/output/`. The directory contains `summary.json`, test/render logs and `figures/`. It refuses to overwrite an existing output directory; use `--output PATH` for another run. Rendering occurs in a temporary workspace, so checked-in figures and the manuscript are not overwritten. No model loading or network access is required after installing dependencies.
 
 `summary.json` records Python/package versions, the 751-pair identity check, the three-seed mean and sample standard deviation, and figure hashes. Byte equality with released figures is reported separately because fonts and platforms can affect rendering. This is a check of saved aggregate evidence, not independent reproduction of the model experiments or every paper claim.
 

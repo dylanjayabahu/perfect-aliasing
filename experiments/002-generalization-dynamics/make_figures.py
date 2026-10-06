@@ -83,7 +83,7 @@ def _suptitle(fig, text, **kw):
         fig.suptitle(text, color=INK, fontweight="bold", **kw)
 
 
-# Every figure that prints too small has the same cause, so the check lives here rather than in review.
+# Every figure that prints too small has the same cause, so the check lives here rather than in a visual check.
 # bbox_inches="tight" GROWS the canvas to contain any artist that sticks out past the figure edge (a
 # legend anchored below, an annotation running off the right).  The PNG is then wider than TEXTWIDTH,
 # \includegraphics scales the whole raster back down, and every fontsize in this module prints smaller
@@ -203,15 +203,15 @@ CELL_TITLES = {
 # Shorter titles for PAPER mode: at a 1.8in panel width the screen titles wrap or collide.
 PAPER_TITLES = {
     "e2id_gemma-9b_in": "Gemma-9B · instr.",
-    "e2id_gemma-9b_em": "Gemma-9B · RL",
+    "e2id_gemma-9b_em": "Gemma-9B · RL, transferred",
     "e2id_qwen-14b_in": "Qwen-14B · instr.",
-    "e2id_qwen-14b_em": "Qwen-14B · RL",
+    "e2id_qwen-14b_em": "Qwen-14B · RL, transferred",
     "e2id_8b_em": "Llama-8B · RL",
     "e2id_8b_in": "Llama-8B · instr.",
     "cbid_gemma-9b_em": "Gemma-9B · RL on codebook",
     "cbid_8b_hi_em": "Llama-8B · RL on codebook",
-    "cbid_8b_em": "Llama-8B · codebook, unsat.",
-    "cbid_mistral-7b_em": "Mistral-7B · codebook, unsat.",
+    "cbid_8b_em": "Llama-8B · RL, unsat.",
+    "cbid_mistral-7b_em": "Mistral-7B · RL, unsat.",
 }
 # Display order: two saturated reward-trained codebook cells, two constant-answer controls, two instructed
 # cells, then reward-trained adapters evaluated on codebooks.
@@ -282,7 +282,7 @@ def _note_gutter(axes, notes, ytop=NOTE_TOP, pad=NOTE_PAD, gap=NOTE_GAP):
         t.set_va("bottom")
 
 
-def fig_identification(fd):
+def fig_identification(fd, name="fig_identification.png", cell_max=CELL_MAX):
     ident = fd.get("identification") or {}
     def _plottable(k):
         c = ident.get(k) or {}
@@ -296,10 +296,10 @@ def fig_identification(fd):
     if not cells:
         print("skip fig_identification (no identification cells)")
         return
-    if len(cells) > CELL_MAX:
-        print(f"  note: {len(cells)} identification cells available, showing the first {CELL_MAX} "
-              f"(dropped: {', '.join(cells[CELL_MAX:])})")
-        cells = cells[:CELL_MAX]
+    if len(cells) > cell_max:
+        print(f"  note: {len(cells)} identification cells available, showing the first {cell_max} "
+              f"(dropped: {', '.join(cells[cell_max:])})")
+        cells = cells[:cell_max]
     n = len(cells)
     # 4 columns would save a whole row of height, but at 1.375in per panel the arm titles are wider
     # than the panel and the canvas overflows to 5.81in (the guard in _save caught it), which shrinks
@@ -340,7 +340,7 @@ def fig_identification(fd):
         ax.set_ylim(-0.04, NOTE_TOP)
         if sub:
             notes.append((ax, ax.text(0.02, 0.04, sub, transform=ax.transAxes,
-                                      fontsize=5.5 if PAPER else 8.5, color=INK2)))
+                                      fontsize=6.5 if PAPER else 8.5, color=INK2)))
         # direct labels on the final-layer values — the two numbers that carry the story
         if xs and ally and mixed and ally[-1] is not None and mixed[-1] is not None:
             afs = 6.0 if PAPER else 9
@@ -377,7 +377,7 @@ def fig_identification(fd):
     for j in range(len(cells), nrow * ncol):
         axes[j // ncol][j % ncol].axis("off")
     if PAPER:
-        fig.supylabel("truth AUROC on rival trials", fontsize=6.5, color=INK2)
+        fig.supylabel("truth AUROC on rival trials", fontsize=7, color=INK2)
     h, l = axes[0][0].get_legend_handles_labels()
     fig.legend(h, l, loc="lower center", ncol=2, frameon=False,
                fontsize=6.5 if PAPER else 9.5, bbox_to_anchor=(0.5, -0.02))
@@ -388,7 +388,7 @@ def fig_identification(fd):
                      fontsize=12.5, fontweight="bold", color=INK, y=1.0)
     fig.tight_layout(rect=(0, 0.045, 1, 1.0 if PAPER else 0.98))
     _note_gutter(used, notes)
-    _save(fig, "fig_identification.png")
+    _save(fig, name)
 
 
 # --- F2: the forced identity action/ally == 1 - truth/ally ------------------------------------------
@@ -477,7 +477,7 @@ def fig_suppression(fd):
 # to make that failure visible rather than to sell a curve.
 def fig_predictors(fd, d2data=None):
     """Deliberately shows BOTH candidate behavioural predictors failing. Emergent cells are drawn as
-    squares, not just a second colour: all 21 of them coincide at exactly (1.000, 0.000), so without a
+    large open rings, not just a second colour: all 21 of them coincide at exactly (1.000, 0.000), so without a
     distinct marker plus an explicit count the entire arm hides underneath one instructed point."""
     grid = fd.get("grid_e2b") or {}
     d2 = (d2data or {}).get("d2") or {}
@@ -602,7 +602,7 @@ def fig_cross_family(fd):
     if not rows:
         print("skip fig_cross_family (no complete family rows)")
         return
-    # order by the instructed arm's lie rate: the ordering variable the paper argues is doing the work
+    # order by the instructed arm's lie rate; the paper finds that this does not order the readouts
     rows.sort(key=lambda r: r[1].get("in", r[1].get("em"))["decep"])
 
     fig, ax = plt.subplots(figsize=_size(8.6, 0.62 * len(rows) + 2.4))
@@ -697,7 +697,7 @@ def fig_refit_artifact(d2data):
     # Anchored in AXES FRACTION, not as an offset from the point. An offset put the text off the right
     # edge, which (a) buried it under two red markers and (b) made bbox_inches="tight" widen the canvas
     # to 7.18in, so LaTeX scaled the whole figure -- and every font in it -- down to 77%.
-    # The low-x half of the axes is empty by construction: no variant lies at deception < 0.5.
+    # The low-x half of the axes is nearly empty: only 8b_hint (deception 0.029) lies below 0.5.
     ax.annotate(f"same activations, same layer:\nrefit reads {worst['auroc']:.3f},"
                 f" fixed probe reads {worst['auroc_frozen']:.3f}\n(both score ally IID 1.000)",
                 xy=(worst["decep"], worst["auroc"]), xycoords="data",
@@ -708,8 +708,8 @@ def fig_refit_artifact(d2data):
            "measured rival deception rate", "truth AUROC on rival trials")
     ax.set_ylim(-0.06, 1.14)
     ax.set_xlim(-0.02, 1.0)
-    # Legend, callout and note all stack in the low-x half of the axes, which is empty by construction
-    # (no variant lies below deception 0.5). Anchoring the legend below the axes instead put it outside
+    # Legend, callout and note all stack in the low-x half of the axes, which is nearly empty
+    # (only 8b_hint, at deception 0.029, lies below 0.5). Anchoring the legend below the axes instead put it outside
     # the figure, where tight_layout cannot see it and bbox_inches="tight" grew the canvas to 7.18in.
     ax.legend(frameon=False, fontsize=NOTE_FS, loc="upper left", bbox_to_anchor=(0.01, 0.44), ncol=1)
     ax.text(0.02, 0.16, f"{len(pts)} system-prompt variants of one model\n(identical weights), N=1000 each",
@@ -831,15 +831,15 @@ def main():
     if not fd and not d2:
         print("no data/ dumps found — nothing to render")
         return
-    fig_identification(fd)
+    fig_identification(fd, cell_max=6)
+    fig_identification(fd, name="fig_identification_full.png")
     fig_action_identity(fd)
     fig_suppression(fd)
     fig_predictors(fd, d2)
     fig_cross_family(fd)
     fig_d2(d2)
     fig_refit_artifact(d2)
-    # The 5b set (2026-08-17). The capability-ladder figure from that plan is deliberately NOT here:
-    # it is dropped (user-confirmed) because it would resurrect the withdrawn §1b.
+    # Figures added 2026-08-17. A capability-ladder figure is deliberately not rendered.
     fig_depth_step(fd)
     fig_freeze_transfer(fd)
     fig_settling(fd)
@@ -848,6 +848,9 @@ def main():
     fig_instrpair(fd)
     fig_geom(fd)
     fig_matched_pairs(d2)
+    # The schematic plots no data; its script writes to the same directory as the figures above.
+    import runpy
+    runpy.run_path(str(HERE / "render_schematic.py"))
 
     # A figure wider than we asked for prints with shrunken fonts (see _save). Fail loudly.
     if _OVERFLOW:
@@ -870,8 +873,8 @@ def main():
 # The 5b figure set. Added 2026-08-17. These read the two sections the e3 analysis job gained that day
 # (`instrpair`, `interventions`) plus the transfer/infercode identification cells.
 #
-# EVERY number below is read from the blob. Nothing is hard-coded — a copy step is a stale-artifact bug
-# waiting to happen, and this module's header says so. Where a slice is missing the figure skips itself
+# Measurements below are read from the blob, except the imported geometric noise-floor reference
+# (GEMMA_BATCH_FLOOR, App. A.2); a copy step is a stale-artifact bug waiting to happen. Where a slice is missing the figure skips itself
 # with a printed note rather than rendering a plausible-looking half-figure.
 # ====================================================================================================
 
@@ -880,9 +883,10 @@ def _skip(name, why):
 
 
 # --- F7 (5b-i): the depth step — a STATED bit is shallow, an INFERRED bit is deep ------------------
-# Carries §0b. The contrast is the point: reading a bit the prompt states is a shallow lexical operation
+# Carries §6. The contrast is the point: reading a bit the prompt states is a shallow lexical operation
 # that saturates almost immediately; computing a bit the prompt only implies does not become linearly
-# available until roughly mid-stack. Same model, same probe protocol, same metric — only the task differs.
+# available until roughly mid-stack. Same base model, probe protocol and metric; the stated-bit curve uses
+# the reward-trained codebook policy, while the inferred-bit curves use the instructed arm.
 def fig_depth_step(fd):
     ident = fd.get("identification") or {}
     stated = ident.get("cbid_gemma-9b_em")           # codebook: the bit is written in the prompt
@@ -895,7 +899,8 @@ def fig_depth_step(fd):
         pts = [(r["l"], r["truth_mixed"]) for r in cell["curve"] if r.get("truth_mixed") is not None]
         return [p[0] for p in pts], [p[1] for p in pts]
 
-    # included at 0.82\textwidth (see fig_action_identity): render at the width it is given, or
+    # Base layout at 0.82\textwidth (see fig_action_identity); figure_layout.refine resizes it for the
+    # paper's 0.47\textwidth wrapped figure. Render at the width it is given, or
     # every fontsize here prints at 84%. The aspect is TALLER than the 7.2x4.0 it used to be because
     # narrowing the canvas without it shrank the axes height from 2.94in to 2.40in while the legend
     # stayed at the same POINT size, which pushed the legend up across the chance line and printed the
@@ -936,7 +941,8 @@ def fig_depth_step(fd):
         ax.annotate(f"{lead}then {dict(zip(xi, yi))[i_sat]:.3f} by L{i_sat}", xy=(i_sat, 1.0),
                     xytext=(i_sat + 1.5, 0.55), fontsize=NOTE_FS, color=MIXED, fontweight="bold")
     # The inferred curve is measured on a SPARSE layer grid, so the line interpolates across layers that
-    # were never measured and the transition point inside the gap is not resolved. Say so on the axes.
+    # were never measured and the transition point inside the gap is not resolved. Say so on the axes;
+    # figure_layout.refine removes this note for the paper, whose caption states it.
     gap = max((b - a for a, b in zip(xi, xi[1:])), default=0)
     if gap > 1:
         ax.annotate(f"inferred curve sampled every {gap} layers:\ntransition not resolved within a gap",
@@ -1005,15 +1011,13 @@ def fig_freeze_transfer(fd):
 
 
 # --- F9 (5b-iii): the causal arm — steering sweep + why the ablation is VOID ------------------------
-# ⚠️ SCOPE NOTE, deliberate and load-bearing. The 5b plan called for "steering/ablation LAYER sweep,
-# ally-fit vs mixed-fit direction". NEITHER contrast exists in any run on the volume: every causal arm
-# loaded a direction with `regime=mixed` (there is no ally-fit causal run at all), and steering was only
-# ever run at L32, so there is no layer sweep either. Rather than fabricate the missing arms, this figure
-# plots what was actually measured — the ALPHA sweep at L32 against its in-run alpha=0 baseline, split by
-# true bit, plus the positive-control panel that makes the ablation VOID rather than null.
+# fig_causal compares mixed-fit and ally-fit steering at L32 against the in-run alpha=0 baseline, split by
+# true bit, plus the positive-control panel that makes the ablation VOID rather than null;
+# fig_depth_sweep supplies the depth sweep.
 # --- F8b: THE SETTLING EXPERIMENT — frozen transfer to held-out inferred-truth tasks ----------------
-# The paper's sharpest self-imposed limitation, answered. Two arms, and the pairing IS the argument:
-#   LEFT  (clean)        fit on templates {0,1}, both rule orientations -> no shallow shortcut exists
+# Two arms, and the pairing IS the argument:
+#   LEFT  (clean)        fit on templates {0,1}, both rule orientations -> excludes an additive shortcut
+#                        over operand-slot and rule-orientation features (not richer hidden features)
 #   RIGHT (contaminated) fit on `gt` only -> the bit reduces to "which slot is larger", a shallow feature
 # Each panel shows the SAME probe frozen and scored two ways (held-out task vs its own same-task control),
 # plus the refit ceiling. The reported quantity is held-out MINUS control, so the two frozen series are
@@ -1044,8 +1048,8 @@ def fig_settling(fd):
         refit = series(hc, "truth_mixed")
         xs = sorted(set(froz) & set(ctl))
 
-        # Grey the layers where the CONTROL itself is at chance: nothing there is readable by any probe,
-        # so the small held-out/control gap is uninformative rather than good.
+        # Grey the layers where the CONTROL itself is at chance: these fitted probes detect no truth signal
+        # there, so a small held-out/control gap does not establish successful transfer.
         dead = [l for l in xs if ctl[l] < 0.6]
         if dead:
             ax.axvspan(min(xs) - 1, max(dead) + 2, color=MUTED, alpha=0.10, zorder=0)
@@ -1078,8 +1082,8 @@ def fig_settling(fd):
             ax.annotate(f"peak L{best}\n{froz[best]:.3f} ({froz[best]-ctl[best]:+.3f})",
                         xy=(max(xs) - 1.0, 0.30), fontsize=NOTE_FS, color=THIRD, fontweight="bold",
                         ha="right", va="center")
-        # ⚠️ AN INVERSION IS NOT "BELOW 0.5". At 0.451 a probe is at CHANCE, and labelling that an
-        # inversion would manufacture the paper's most striking claim out of noise -- the first version of
+        # Annotate only strong inversions (AUROC below 0.25). A value such as 0.451 is near chance, and
+        # labelling it would overstate the result out of noise -- the first version of
         # this figure did exactly that on the clean arm. Require a decisive margin, so the label appears
         # only on the arm where the probe really is an anti-detector.
         inv = [l for l in xs if froz[l] < 0.25]
@@ -1104,9 +1108,8 @@ def fig_settling(fd):
 
 def fig_causal(fd):
     iv = fd.get("interventions") or {}
-    # ⭐ THE CONTRAST THE 5b PLAN ASKED FOR, finally runnable (2026-08-18). Until the ally-fit direction was
-    # materialised from `all_directions`, every causal run in the project perturbed the mixed-fit direction
-    # and "ally-fit vs mixed-fit" existed in no artifact. Both directions come from the SAME fit on the SAME
+    # The ally-fit versus mixed-fit contrast (2026-08-18), using the ally-fit direction materialised from
+    # `all_directions`. Both directions come from the SAME fit on the SAME
     # activations; only the fitting contexts differ. Same layer, same arm, same episodes, same alpha grid.
     pairs = [("revsteer2_g9b_in_l32", "allyfit2_g9b_in_l32", "instructed"),
              ("revsteer2_g9b_em_l32", "allyfit2_g9b_em_l32", "reward-trained")]
@@ -1188,10 +1191,9 @@ def fig_causal(fd):
     for r in ((iv.get("cause7_g9b_em_l32_sub4d") or {}).get("subspace_ablation") or {}).get("ranks", []):
         if not any(x.get("k") == r.get("k") for x in det32_ranks):
             det32_ranks.append(r)
-    # k=8 comes from cause8_*_{a,b,c}: three REDUNDANT copies launched because the eviction was a coin flip,
-    # not a cost problem. Same seed and same fit, so any two survivors agree to 5 dp --
-    # determinism again, NOT replication -- and the `not any(...)` guard is what keeps only the first in the
-    # plot. Absent keys are skipped, so this is inert until one of them lands.
+    # k=8 comes from cause8_*_{a,b,c}: redundant copies of one run (only _b is in the released results).
+    # Same seed and same fit, so copies agree -- determinism, NOT replication -- and the `not any(...)`
+    # guard keeps only the first in the plot. Absent keys are skipped.
     for src_name in ("cause8_g9b_em_l32_sub8d_a", "cause8_g9b_em_l32_sub8d_b",
                      "cause8_g9b_em_l32_sub8d_c"):
         blk = (iv.get(src_name) or {}).get("subspace_ablation") or {}
@@ -1199,8 +1201,8 @@ def fig_causal(fd):
             if not any(x.get("k") == r.get("k") for x in det32_ranks):
                 det32_ranks.append(r)
     det32 = {"ranks": sorted(det32_ranks, key=lambda r: r.get("k", 0))} if det32_ranks else None
-    # k=8 is ABSENT by eviction, not by omission. Say so on the axis rather than letting the ladder look
-    # complete: a gap that is not labelled reads as "we chose to stop here".
+    # The released ladder includes k=8. If it were absent, say so on the axis rather than letting the
+    # ladder look complete: a gap that is not labelled reads as "we chose to stop here".
     det32_missing = det32 is not None and not any(r.get("k") == 8 for r in det32_ranks)
     # Tags name BOTH distinguishing facts (layer and fit size). The two ladders differ in more than one
     # way, so a bare "u"/"d" would invite the reader to attribute the difference to whichever one they
@@ -1478,8 +1480,9 @@ def fig_instrpair(fd):
 # --- F13: the direct geometric comparison (App. geom, carries §refit) ------------------------------
 # Closes the concession §refit used to make in words. The question is not "is the geometry similar" -- a
 # similarity number alone is uninterpretable -- but whether the difference between two directive wordings
-# is the model READING DIFFERENT TEXT or the directive DOING WORK. The ally arm is what separates those:
-# the rival clause is present in the ally prompts too but behaviourally inert there.
+# is the model READING DIFFERENT TEXT or the directive DOING WORK. The ally arm detects a role-dependent
+# component (the rival clause is present in the ally prompts too but behaviourally inert there); it does
+# not isolate causal effects of wording, length or policy.
 #
 # ⚠️ THE ONE HARD-CODED NUMBER IN THIS MODULE, and it is hard-coded deliberately. The in-run bf16
 # numerical floor came out at EXACTLY 0.0 paired relative L2 at every layer, against 1.211e-2 measured by

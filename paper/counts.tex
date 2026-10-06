@@ -21,3 +21,5 @@ row & result key \\\midrule
 10 & \texttt{e2id\_gemma-9b\_em} \\
 \bottomrule\end{tabular}\end{table}\par
 The two Llama-8B inferred-truth exceptions are \texttt{infid\_8b\_in} and \texttt{id4\_infcb\_8b\_in}; their final-layer mixed-fit AUROCs are $0.8716$, $0.9583$, respectively. They are separate evaluations, not independent estimates of a cross-task success probability.
+
+\textbf{Run and check provenance.} The historical run log reports that 19/19 original plain-bit training runs reached the same reward plateau; a complete run-inclusion manifest was not retained, and the log does not let us match those runs to the 21 reward-trained cells of the plain-bit grid in App.~\ref{app:apparent}. The realized correlation between \texttt{token} and \texttt{action} (\S\ref{sec:setup}) depends only on the sampled episodes, not on the model: the same value, $-0.018$, recurs to 16 significant figures in 11 cells spanning four architectures and both arms. The four \texttt{truth}--\texttt{token} cosines of \S\ref{sec:setup} come from run logs and are not in the consolidated results file.

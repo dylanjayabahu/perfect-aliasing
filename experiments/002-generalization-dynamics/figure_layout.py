@@ -39,7 +39,11 @@ def refine(fig, name, rect):
             text.set_zorder(8)
     if name == 'fig_refit_artifact.png':
         ax = axes[0]
-        fig.set_size_inches(5.06, 3.15)
+        # Flatter, with every text element at 7pt or more at its 0.92\textwidth (1:1) size.
+        fig.set_size_inches(5.06, 2.2)
+        ax.tick_params(labelsize=7)
+        ax.xaxis.label.set_fontsize(7.5)
+        ax.yaxis.label.set_fontsize(7.5)
         remove_text(ax, 'same activations, same layer:')
         remove_text(ax, '14 system-prompt variants')
         # The caption identifies the comparison; a ring keeps the exact point
@@ -48,11 +52,14 @@ def refine(fig, name, rect):
         i = abs(frozen[:, 1] - refit[:, 1]).argmax()
         ax.scatter([refit[i, 0]], [refit[i, 1]], s=100,
                    facecolors='none', edgecolors=INK, linewidths=0.9, zorder=6)
-        bottom_legend(fig, ax, ncol=1, labels=[
-            'one fixed probe, cross-scored on every variant',
-            "probe refit on each variant's own ally data"], size=6.3)
+        ax.annotate(f'refit {refit[i, 1]:.3f}, frozen {frozen[i, 1]:.3f}', (refit[i, 0], refit[i, 1]),
+                    xytext=(-9, 0), textcoords='offset points', ha='right', va='center', fontsize=7, color=INK)
+        ax.set_yticks([0, 0.2, 0.4, 0.6, 0.8, 1.0])
+        bottom_legend(fig, ax, ncol=2, labels=[
+            'one fixed probe, scored on every variant',
+            "probe refit on each variant's own ally data"], size=7)
         ax.set_title('')
-        return (0, 0.18, 1, 1)
+        return (0, 0.11, 1, 1)
     if name == 'fig_settling.png':
         fig.set_size_inches(5.5, 2.85)
         # Explanation belongs in the caption; the grey span remains visible.
@@ -123,10 +130,26 @@ def refine(fig, name, rect):
                 text.arrowprops = None
         return rect
     if name == 'fig_depth_step.png':
-        fig.set_size_inches(4.62, 3.05)
-        bottom_legend(fig, axes[0], ncol=1, size=6.2)
-        remove_text(axes[0], 'inferred curve sampled every')
-        return (0, 0.24, 1, 1)
+        # 2026-10-06: a main-text wrapped figure at 0.47\\textwidth (1:1), every text element 7pt or more.
+        ax = axes[0]
+        fig.set_size_inches(2.585, 2.0)
+        remove_text(ax, 'inferred curve sampled every')
+        remove_text(ax, 'stated:')
+        for text in list(ax.texts):
+            if text.get_text().startswith('inferred:') or 'then ' in text.get_text():
+                text.remove()
+        ax.tick_params(labelsize=7)
+        ax.set_xlabel('layer', fontsize=7.5)
+        ax.set_ylabel('truth AUROC, mixed fit', fontsize=7.5)
+        handles, _ = ax.get_legend_handles_labels()
+        for legend in list(fig.legends):
+            legend.remove()
+        if ax.get_legend() is not None:
+            ax.get_legend().remove()
+        ax.legend(handles, ['stated bit', 'inferred bit', 'replicate'], loc='center right', bbox_to_anchor=(1.05, 0.6), handletextpad=0.4,
+                  fontsize=7, frameon=False, handlelength=1.6, borderaxespad=0.2, labelspacing=0.25)
+        ax.set_title('')
+        return (0, 0, 1, 1)
     if name == 'fig_freeze_transfer.png':
         fig.set_size_inches(5.5, 2.45)
         bottom_legend(fig, axes[0], size=6.2)
