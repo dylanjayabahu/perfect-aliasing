@@ -217,9 +217,11 @@ python src/perfect_aliasing/behavior.py --model-id gemma-9b --adapter adapters/r
 python src/perfect_aliasing/instrpair_probe.py --model-id gemma-9b --n 1000 \
     --out analysis/instrpair/gemma-9b.json
 
-# the direct geometric comparison (paper Appendix on geometry)
-python src/perfect_aliasing/geom_compare.py --model-id gemma-9b --n 1000 \
-    --out analysis/geom/gemma-9b.json
+# the direct geometric comparison (paper App. A.2): Llama-3.1-8B, 400 episodes per rung, both role arms
+python src/perfect_aliasing/geom_compare.py --model-id 8b --n 400 --role rival \
+    --out analysis/geom/geom_riv_8b.json
+python src/perfect_aliasing/geom_compare.py --model-id 8b --n 400 --role ally \
+    --out analysis/geom/geom_ally_8b.json
 
 # causal interventions: patch, ablate, steer
 python src/perfect_aliasing/interventions.py --model-id gemma-9b --adapter adapters/rl_deceiver_gemma-9b \

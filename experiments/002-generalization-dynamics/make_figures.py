@@ -190,8 +190,8 @@ CELL_TITLES = {
     "idsmoke_8b_em": "Llama-3.1-8B · emergent (N=120 smoke)",
     # cells RL-trained DIRECTLY on the codebook task — the saturated-emergent cells that close the loop
     # kept short: long titles collide across a 3-column grid
-    "cbid_gemma-9b_em": "Gemma-9B · RL on codebook",
-    "cbid_8b_hi_em": "Llama-8B · RL on codebook",
+    "cbid_gemma-9b_em": "Gemma-9B · RL",
+    "cbid_8b_hi_em": "Llama-8B · RL",
     "cbid_gemma-9b_ent_em": "Gemma-9B · RL on codebook (+ent. bonus)",
     "cbid_8b_ent_em": "Llama-8B · RL on codebook (+ent. bonus)",
     "cbid_8b_em": "Llama-8B · RL on codebook, unsaturated",
@@ -203,13 +203,13 @@ CELL_TITLES = {
 # Shorter titles for PAPER mode: at a 1.8in panel width the screen titles wrap or collide.
 PAPER_TITLES = {
     "e2id_gemma-9b_in": "Gemma-9B · instr.",
-    "e2id_gemma-9b_em": "Gemma-9B · RL, transferred",
+    "e2id_gemma-9b_em": "Gemma-9B · transferred",
     "e2id_qwen-14b_in": "Qwen-14B · instr.",
-    "e2id_qwen-14b_em": "Qwen-14B · RL, transferred",
+    "e2id_qwen-14b_em": "Qwen-14B · transferred",
     "e2id_8b_em": "Llama-8B · RL",
     "e2id_8b_in": "Llama-8B · instr.",
-    "cbid_gemma-9b_em": "Gemma-9B · RL on codebook",
-    "cbid_8b_hi_em": "Llama-8B · RL on codebook",
+    "cbid_gemma-9b_em": "Gemma-9B · RL",
+    "cbid_8b_hi_em": "Llama-8B · RL",
     "cbid_8b_em": "Llama-8B · RL, unsat.",
     "cbid_mistral-7b_em": "Mistral-7B · RL, unsat.",
 }
@@ -498,7 +498,7 @@ def fig_predictors(fd, d2data=None):
         from collections import Counter
         counts = {}
         for arm, color, lab, kw in (
-            ("em", ALLY, "emergent (RL)",
+            ("em", ALLY, "reward-trained",
              dict(s=150, marker="o", facecolor="none", edgecolor=ALLY, linewidth=1.9, zorder=5)),
             ("in", MIXED, "instructed",
              dict(s=46, marker="o", color=MIXED, alpha=0.9, edgecolor="white", linewidth=0.9, zorder=4)),
@@ -515,7 +515,7 @@ def fig_predictors(fd, d2data=None):
         # one combined annotation — two separate ones anchored to the same point overprint each other
         if counts:
             mode = list(counts.values())[0][0]
-            parts = [f"{c} {'emergent' if a == 'em' else 'instructed'}"
+            parts = [f"{c} {'reward-trained' if a == 'em' else 'instructed'}"
                      for a, (_, c) in counts.items()]
             # flip the label to the inside when the anchor sits near the left spine, else it clips
             lo, hi = ax.get_xlim()
@@ -534,7 +534,7 @@ def fig_predictors(fd, d2data=None):
             if dd:
                 ax.scatter([p[0] for p in dd], [p[1] for p in dd], s=64, marker="D", color=THIRD,
                            edgecolor="white", linewidth=1.2, zorder=5,
-                           label="D2 directive ladder (within-model)")
+                           label="directive variants (Llama-8B, Mistral-7B)")
                 # These labels used to hang off their own markers. Every offset that cleared one
                 # obstacle hit another: -14pt dropped "Llama-8B max" onto the x axis, +13pt put it
                 # through the coincident-cells note, and the Mistral labels overprinted the diamonds
@@ -559,8 +559,8 @@ def fig_predictors(fd, d2data=None):
                         alpha=0.8, zorder=2, label="one RL trajectory (41 checkpoints)")
         _style(ax, None, xlabel, "truth AUROC on rival trials")
         ax.set_ylim(-0.06, 1.12)
-    axes[0].set_title("(a) by lie RATE", fontsize=(7.5 if PAPER else 10.5), fontweight="bold", color=INK, pad=8)
-    axes[1].set_title("(b) by CONFIDENCE (entropy)", fontsize=(7.5 if PAPER else 10.5), fontweight="bold",
+    axes[0].set_title("(a) by lie rate", fontsize=(7.5 if PAPER else 10.5), fontweight="bold", color=INK, pad=8)
+    axes[1].set_title("(b) by confidence (entropy)", fontsize=(7.5 if PAPER else 10.5), fontweight="bold",
                       color=INK, pad=8)
     h, l = axes[0].get_legend_handles_labels()
     # ncol=4 made the legend wider than the figure, so tight bbox grew the canvas to 7.12in (77% fonts).
@@ -616,7 +616,7 @@ def fig_cross_family(fd):
         if a and b:                                    # connector shows the arm gap at a glance
             ax.plot([a["auroc"], b["auroc"]], [y + DODGE, y - DODGE], color=MUTED, linewidth=1.4,
                     alpha=0.5, zorder=2)
-        for arm, color, marker, dy, lab in (("em", ALLY, "s", +DODGE, "emergent (RL)"),
+        for arm, color, marker, dy, lab in (("em", ALLY, "s", +DODGE, "reward-trained"),
                                             ("in", MIXED, "o", -DODGE, "instructed")):
             v = cell.get(arm)
             if not v:
@@ -873,8 +873,7 @@ def main():
 # The 5b figure set. Added 2026-08-17. These read the two sections the e3 analysis job gained that day
 # (`instrpair`, `interventions`) plus the transfer/infercode identification cells.
 #
-# Measurements below are read from the blob, except the imported geometric noise-floor reference
-# (GEMMA_BATCH_FLOOR, App. A.2); a copy step is a stale-artifact bug waiting to happen. Where a slice is missing the figure skips itself
+# Measurements below are read from the blob; a copy step is a stale-artifact bug waiting to happen. Where a slice is missing the figure skips itself
 # with a printed note rather than rendering a plausible-looking half-figure.
 # ====================================================================================================
 
@@ -1035,7 +1034,7 @@ def fig_settling(fd):
     ARMS = [("settle_held_tplB_g9b_in", "settle_ctl_tplA_g9b_in",
              "clean fit: both orientations\n$\\rightarrow$ held-out templates {2,3}"),
             ("settle_held_lt_g9b_in", "settle_ctl_gt_g9b_in",
-             "contaminated fit: one orientation\n$\\rightarrow$ held-out flipped rule")]
+             "single-orientation fit\n$\\rightarrow$ held-out flipped rule")]
     if not all(ident.get(h) and ident.get(c) for h, c, _ in ARMS):
         return _skip("fig_settling.png", "need the settle_held_*/settle_ctl_* arms in the blob")
 
@@ -1208,7 +1207,7 @@ def fig_causal(fd):
     # way, so a bare "u"/"d" would invite the reader to attribute the difference to whichever one they
     # happened to have in mind.
     groups = []          # (start_index, end_index, label) for the per-ladder captions under the axis
-    for src, glabel in ((sub, "L32, underdet.\n$n{=}2000$"),
+    for src, glabel in ((sub, "L32, underdetermined\n$n{=}2000$"),
                         (det32, "L32, determined\n$n{=}4000$" + ("\n($k{=}8$ evicted)" if det32_missing else "")),
                         (det, "L24, determined\n$n{=}4000$")):
         if not src:
@@ -1418,9 +1417,8 @@ def fig_instrpair(fd):
         # The is_lying series CANNOT be plotted — say so on the axes rather than leaving a silent gap.
         nclass = c.get("n_is_lying_classes")
         if c["layers"] and (c["layers"][0].get("directive") or {}).get("split_unavailable_by_construction"):
-            # Plain text, NOT LaTeX: matplotlib is not in usetex mode here, so a backslash-escaped
-            # underscore renders as a literal "is\_lying" on the canvas.
-            ax.annotate(f"is_lying unavailable by\nconstruction ({nclass} class)",
+            # Plain text, NOT LaTeX: matplotlib is not in usetex mode here.
+            ax.annotate(f"lying AUROC undefined:\n{nclass} class",
                         xy=(0.5, 0.04), xycoords="axes fraction", ha="center", va="bottom",
                         fontsize=NOTE_FS, color=INK, fontweight="bold")
         # Headroom at the bottom so the legend does not sit on the truth curve at ~0.50.
@@ -1484,13 +1482,9 @@ def fig_instrpair(fd):
 # component (the rival clause is present in the ally prompts too but behaviourally inert there); it does
 # not isolate causal effects of wording, length or policy.
 #
-# ⚠️ THE ONE HARD-CODED NUMBER IN THIS MODULE, and it is hard-coded deliberately. The in-run bf16
-# numerical floor came out at EXACTLY 0.0 paired relative L2 at every layer, against 1.211e-2 measured by
-# the Gemma-2-9B batch gate for the same batch-32-vs-8 comparison -- a >=240x discrepancy we have not
-# explained (--ref-batch 8 did run; the model is bf16). Plotting our own floor would flatter the result by
-# two orders of magnitude, so the figure shows the IMPORTED Gemma floor, which is the conservative choice
-# and the one the appendix text states. It is not in the blob because it belongs to a different run.
-GEMMA_BATCH_FLOOR = 1.211e-2
+# No numerical floor is drawn. The in-run floor is exactly 0.0 paired relative L2 at every layer, which we
+# have not explained (App. A.2), and no validated replacement exists, so the shallow distances are not
+# resolved against a floor.
 
 
 def fig_geom(fd):
@@ -1522,10 +1516,6 @@ def fig_geom(fd):
     # -- Panel 1: the two arms across depth. They coincide shallow and separate deep; that separation IS
     # the result, so the two curves share one axis rather than being split across panels.
     ax = axes[0]
-    ax.axhline(GEMMA_BATCH_FLOOR, color=MUTED, lw=0.9, linestyle=(0, (1, 2)), zorder=1)
-    ax.annotate("floor $1.2{\\times}10^{-2}$", xy=(xs[0], GEMMA_BATCH_FLOOR),
-                xytext=(1, 3), textcoords="offset points", fontsize=NOTE_FS, color=INK2,
-                ha="left", va="bottom")
     la, = ax.plot(xs, ma, color=THIRD, lw=1.5, linestyle=(0, (4, 2.5)), marker="s", ms=3.0, zorder=3,
                   label="ally (same text, clause inert)")
     lr, = ax.plot(xs, mr, color=MIXED, lw=2.2, marker="o", ms=3.4, zorder=4,

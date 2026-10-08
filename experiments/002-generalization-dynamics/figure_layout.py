@@ -37,6 +37,15 @@ def refine(fig, name, rect):
             if text.get_bbox_patch() is None:
                 text.set_bbox({'facecolor':'white','edgecolor':'none','pad':0.25})
             text.set_zorder(8)
+    if name == 'fig_identification_full.png':
+        # v2: in this panel the falling ally-fit curve crossed the mixed-fit end label.
+        for ax in axes:
+            if 'Qwen-14B' in ax.get_title() and 'transferred' in ax.get_title():
+                for text in ax.texts:
+                    if text.get_text() == '1.000':
+                        x, y = text.get_position()
+                        text.set_position((x + 8, y))
+        return rect
     if name == 'fig_refit_artifact.png':
         ax = axes[0]
         # Flatter, with every text element at 7pt or more at its 0.92\textwidth (1:1) size.
@@ -84,9 +93,17 @@ def refine(fig, name, rect):
                     x, y = text.xy
                     text.set_text(text.get_text().replace('cells coincide here',
                                   f'cells at ({x:.2f}, {y:.2f})'))
+                    if text.get_ha() == 'right':
+                        # v2: clear the instructed point just right of the label's end.
+                        ox, oy = text.get_position()
+                        text.set_position((ox - 10, oy))
         bottom_legend(fig, axes[0], size=5.8)
         return (0, 0.19, 1, 1)
     if name == 'fig_geom.png':
+        # v2: the one-line right-panel title widened the canvas past 5.5in (fonts printed at 96%).
+        if axes[2].get_title() == 'matched character count (rival)':
+            axes[2].set_title('matched character\ncount (rival)', fontsize=axes[2].title.get_fontsize(),
+                              fontweight='bold', color=axes[2].title.get_color())
         for text in axes[2].texts:
             if text.get_text() == 'p_withhold':
                 text.set_position((-2, -8))
@@ -170,6 +187,11 @@ def refine(fig, name, rect):
         for text in list(axes[-1].texts):
             if 'evicted' in text.get_text():
                 text.remove()
+        # v2: group labels sat directly under the rank tick labels.
+        for text in axes[-1].texts:
+            if 'determined' in text.get_text():
+                x, y = text.get_position()
+                text.set_position((x, y - 0.07))
         return rect
     if name == 'fig_depth_sweep.png':
         fig.set_size_inches(5.5, 3.85)

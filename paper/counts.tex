@@ -1,25 +1,7 @@
 \subsection{Cell provenance and scoring denominators}
 \label{app:counts}
-Table~\ref{tab:counts} identifies each run behind Table~\ref{tab:ident}. All rows collected $N=1000$ episodes, with random role assignment and a 70/30 split stratified by role (split seed 42). Mixed fitting uses 700 rows; ally fitting uses approximately 350, and rival evaluation approximately 150. Exact role-specific test counts and class counts were not retained in the consolidated record, so these approximations must not be read as exact denominators. Behavioural rates use all collected episodes of the relevant role.
-\par
-\begin{table}[h]\centering\small
-\caption{Result keys for the headline comparison. Row 1 comprises three training seeds.}\label{tab:counts}
-\par\vspace{4pt}
-\begin{tabular}{@{}rl@{}}\toprule
-row & result key \\\midrule
-1a & \texttt{cbid\_gemma-9b\_em} \\
-1b & \texttt{cbid\_gemma-9b\_em\_s1} \\
-1c & \texttt{cbid\_gemma-9b\_em\_s2} \\
-2 & \texttt{cbid\_gemma-9b\_ent\_em} \\
-3 & \texttt{cbid\_8b\_hi\_em} \\
-4 & \texttt{symid\_gemma-9b\_em} \\
-5 & \texttt{symid\_qwen-14b\_em} \\
-6 & \texttt{cbid\_8b\_em} \\
-7 & \texttt{cbid\_mistral-7b\_em} \\
-8 & \texttt{e2id\_qwen-14b\_in} \\
-9 & \texttt{e2id\_gemma-9b\_in} \\
-10 & \texttt{e2id\_gemma-9b\_em} \\
-\bottomrule\end{tabular}\end{table}\par
-The two Llama-8B inferred-truth exceptions are \texttt{infid\_8b\_in} and \texttt{id4\_infcb\_8b\_in}; their final-layer mixed-fit AUROCs are $0.8716$, $0.9583$, respectively. They are separate evaluations, not independent estimates of a cross-task success probability.
+All rows collected $N=1000$ episodes, with random role assignment and a 70/30 split stratified by role (split seed 42). Mixed fitting uses 700 rows; ally fitting uses approximately 350, and rival evaluation approximately 150. Exact role-specific test counts and class counts were not retained in the consolidated record, so these approximations must not be read as exact denominators. Behavioural rates use all collected episodes of the relevant role.
+ Row 1 of Table~\ref{tab:ident} combines three training seeds; each remaining row reports one configuration.\par
+The two instructed Llama-8B inferred-truth evaluations used $N=1000$ and $N=2000$; their final-layer mixed-fit AUROCs are $0.8716$ and $0.9583$, respectively. They are separate evaluations, not independent estimates of a cross-task success probability.
 
-\textbf{Run and check provenance.} The historical run log reports that 19/19 original plain-bit training runs reached the same reward plateau; a complete run-inclusion manifest was not retained, and the log does not let us match those runs to the 21 reward-trained cells of the plain-bit grid in App.~\ref{app:apparent}. The realized correlation between \texttt{token} and \texttt{action} (\S\ref{sec:setup}) depends only on the sampled episodes, not on the model: the same value, $-0.018$, recurs to 16 significant figures in 11 cells spanning four architectures and both arms. The four \texttt{truth}--\texttt{token} cosines of \S\ref{sec:setup} come from run logs and are not in the consolidated results file.
+\textbf{Run and check provenance.} A complete record of which plain-bit training runs were included was not retained, so the 21 reward-trained cells of the plain-bit grid in App.~\ref{app:apparent} cannot be matched to individual training runs. The realized correlation between \texttt{token} and \texttt{action} (\S\ref{sec:setup}) depends only on the sampled episodes, not on the model: the same value, $-0.018$, recurs to 16 significant figures in 11 cells spanning four architectures and both arms.
